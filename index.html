@@ -1,0 +1,2525 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PLUMBER DESIGN — визуальный проектировщик системы отопления</title>
+<meta name="description" content="Визуальный проектировщик систем отопления: схемы, радиаторы, тёплые полы, коллекторы, котлы, ведомость материалов, экспорт.">
+<meta name="theme-color" content="#070B14">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PLUMBER DESIGN">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070B14;
+  --bg2:#0B1220;
+  --panel:rgba(255,255,255,.045);
+  --panel2:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.09);
+  --border-strong:rgba(255,255,255,.16);
+  --text:#E8EEF9;
+  --muted:#8A97AE;
+  --accent:#FF6B35;
+  --accent2:#FF4D6D;
+  --cyan:#38BDF8;
+  --ok:#34D399;
+  --grad:linear-gradient(135deg,#FF7A45 0%,#FF4D6D 100%);
+  --shadow:0 18px 44px rgba(0,0,0,.45);
+  --r:18px;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font);
+  background:
+    radial-gradient(900px 520px at 12% -10%, rgba(255,107,53,.16), transparent 60%),
+    radial-gradient(820px 520px at 92% 4%, rgba(56,189,248,.14), transparent 62%),
+    radial-gradient(700px 700px at 60% 110%, rgba(255,77,109,.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.app{height:100vh;display:flex;flex-direction:column}
+
+/* ---------- header ---------- */
+header{
+  display:flex;align-items:center;gap:18px;
+  padding:12px 18px;
+  background:rgba(11,18,32,.72);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  z-index:30;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{
+  width:42px;height:42px;border-radius:13px;background:var(--grad);
+  display:grid;place-items:center;box-shadow:0 8px 22px rgba(255,107,53,.38);
+  flex:0 0 auto;
+}
+.brand h1{font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+.brand h1 .bt1{color:var(--text)}
+.brand h1 .bt2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand .projname{background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted);font-size:11.5px;padding:1px 6px;margin-top:2px;width:190px;outline:none;transition:.15s}
+.brand .projname:hover{border-color:rgba(255,255,255,.14)}
+.brand .projname:focus{border-color:var(--accent,#FF6B35);color:var(--text);background:rgba(0,0,0,.2)}
+.mtab{display:flex;gap:2px;margin:-4px 0 8px;flex-wrap:wrap}
+.mtab button{flex:1;min-width:64px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);color:var(--muted);border-radius:6px 6px 0 0;padding:4px 2px;font-size:10.5px;cursor:pointer}
+.mtab button.on{color:var(--text);border-bottom-color:transparent;background:rgba(255,255,255,.07);font-weight:700}
+.mtable{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:6px}
+.mtable th{color:var(--muted);font-weight:600;text-align:left;padding:2px 3px;border-bottom:1px solid rgba(255,255,255,.09);font-size:9.5px}
+.mtable td{padding:2px 2px}
+.mtable input{width:100%;min-width:0;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);border-radius:4px;color:var(--text);padding:2px 4px;font-size:10.5px;outline:none}
+.mtable input:focus{border-color:var(--accent,#FF6B35)}
+.mtable .fl{color:var(--muted);font-size:9.5px;white-space:nowrap}
+.diag{border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.08);border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;line-height:1.55}
+.diag h4{margin:0 0 4px;font-size:11.5px;color:#F59E0B}
+.diag ul{margin:0;padding-left:16px}
+.diag .ok{color:#34D399}
+.branchtag{stroke:none}
+.hgrow{flex:1}
+.hactions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+.btn{
+  font-family:var(--font);font-size:12.5px;font-weight:700;letter-spacing:.1px;
+  color:var(--text);background:var(--panel);border:1px solid var(--border);
+  padding:9px 14px;border-radius:12px;cursor:pointer;
+  transition:.18s cubic-bezier(.2,.8,.3,1);display:inline-flex;align-items:center;gap:7px;
+  white-space:nowrap;
+}
+.btn:hover{background:var(--panel2);border-color:var(--border-strong);transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 8px 20px rgba(255,77,109,.3)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.danger:hover{border-color:rgba(255,77,109,.55);color:#FF8098}
+.btn .ic{width:15px;height:15px;flex:0 0 auto;opacity:.9}
+
+/* ---------- layout ---------- */
+main{flex:1;display:grid;grid-template-columns:276px 1fr 344px;gap:14px;padding:14px;min-height:0}
+.panel{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;overflow:hidden;
+}
+.phead{padding:15px 16px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.phead h2{font-size:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#C7D2E4}
+.phead .dot{width:7px;height:7px;border-radius:50%;background:var(--grad);box-shadow:0 0 10px rgba(255,107,53,.8)}
+
+/* ---------- catalog ---------- */
+.catalog{overflow-y:auto;padding:12px}
+.cat-group{margin-bottom:16px}
+.cat-label{
+  font-size:10.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:8px;margin:0 2px 8px;
+}
+.cat-label i{
+  font-style:normal;width:18px;height:18px;border-radius:6px;background:var(--panel2);
+  border:1px solid var(--border);display:grid;place-items:center;font-size:9.5px;color:#C7D2E4;
+}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{
+  position:relative;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:14px;padding:9px 8px 8px;cursor:pointer;text-align:center;
+  transition:.18s cubic-bezier(.2,.8,.3,1);user-select:none;
+}
+.card:hover{background:var(--panel2);border-color:var(--border-strong);transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,.35)}
+.card:active{transform:translateY(0) scale(.98)}
+.card.on{border-color:var(--accent);background:linear-gradient(180deg,rgba(255,107,53,.16),rgba(255,77,109,.06));box-shadow:0 0 0 1px rgba(255,107,53,.35),0 10px 24px rgba(255,77,109,.18)}
+.card .prev{height:46px;display:grid;place-items:center;margin-bottom:5px}
+.card .nm{font-size:11px;font-weight:700;line-height:1.25;color:#D5DEEE}
+.card .sp{font-size:9.5px;color:var(--muted);margin-top:2px}
+.card.on::after{content:'';position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+
+/* ---------- workspace ---------- */
+.workspace{position:relative;min-width:0}
+.wtools{
+  position:absolute;top:12px;left:12px;right:12px;z-index:6;
+  display:flex;gap:8px;align-items:flex-start;pointer-events:none;flex-wrap:wrap;
+}
+.wtools .chip{
+  pointer-events:auto;background:rgba(11,18,32,.82);border:1px solid var(--border);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-radius:12px;padding:7px 11px;font-size:11.5px;font-weight:700;color:#C7D2E4;
+  display:inline-flex;align-items:center;gap:7px;transition:.15s;
+}
+.chip button{all:unset;cursor:pointer;padding:0 4px;color:var(--muted);font-weight:800}
+.chip button:hover{color:var(--text)}
+.hint{
+  pointer-events:auto;background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,77,109,.08));
+  border:1px solid rgba(255,107,53,.35);color:#FFD9C7;max-width:360px;
+  transition:opacity .3s;
+}
+@media (max-width:1450px){ .hint{display:none!important} }
+.legend{
+  position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:14px;
+  background:rgba(11,18,32,.82);border:1px solid var(--border);border-radius:12px;
+  padding:8px 13px;font-size:11px;font-weight:700;color:#C7D2E4;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.legend b{display:inline-block;width:22px;height:0;border-top:4px solid;vertical-align:middle;margin-right:7px;border-radius:2px}
+.legend .l1 b{border-color:#FF6B35}
+.legend .l2 b{border-top-style:dashed;border-color:#38BDF8}
+#canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;border-radius:var(--r);cursor:default}
+#canvas.panning{cursor:grabbing}
+#canvas.armed{cursor:crosshair}
+
+/* ---------- inspector ---------- */
+.tabs{display:flex;gap:6px;padding:10px 12px 0}
+.tab{
+  flex:1;text-align:center;padding:9px 6px;border-radius:11px 11px 0 0;font-size:12px;font-weight:800;
+  color:var(--muted);cursor:pointer;border:1px solid transparent;border-bottom:none;transition:.16s;
+}
+.tab.on{background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text)}
+.tab:hover{color:var(--text)}
+.ipanel{overflow-y:auto;padding:14px;flex:1}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:10.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input,.field select,.field textarea{
+  width:100%;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text);
+  background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:11px;padding:10px 12px;
+  outline:none;transition:.16s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,.16)}
+.field select option{background:#101828;color:var(--text)}
+.field .ro{background:rgba(255,255,255,.03);color:var(--cyan);font-weight:800}
+.row{display:flex;gap:8px}
+.row .btn{flex:1;justify-content:center}
+.empty{text-align:center;padding:26px 10px;color:var(--muted);font-size:12.5px;line-height:1.65}
+.empty .big{font-size:30px;margin-bottom:10px;opacity:.65}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:5px 11px;font-size:11px;font-weight:800;color:#C7D2E4}
+.typebadge{
+  display:flex;align-items:center;gap:11px;background:linear-gradient(135deg,rgba(255,107,53,.14),rgba(255,77,109,.05));
+  border:1px solid rgba(255,107,53,.3);border-radius:14px;padding:11px 13px;margin-bottom:14px;
+}
+.typebadge .tb-prev{width:56px;height:42px;display:grid;place-items:center;background:rgba(0,0,0,.25);border-radius:10px;flex:0 0 auto}
+.typebadge .tb-n{font-size:13px;font-weight:800}
+.typebadge .tb-s{font-size:11px;color:var(--muted);font-weight:600}
+section.block{border-top:1px dashed var(--border);margin-top:14px;padding-top:13px}
+section.block h3{font-size:10.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+/* ---------- BOM ---------- */
+.bom-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat{background:rgba(255,255,255,.045);border:1px solid var(--border);border-radius:13px;padding:10px 12px}
+.stat b{display:block;font-size:19px;font-weight:800;letter-spacing:-.5px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{font-size:10.5px;color:var(--muted);font-weight:700}
+table.bom{width:100%;border-collapse:collapse;font-size:11.5px}
+table.bom th{
+  text-align:left;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);
+  padding:7px 7px;border-bottom:1px solid var(--border);position:sticky;top:-14px;background:#0D1424;z-index:2;
+}
+table.bom td{padding:8px 7px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:top;font-weight:600;color:#D5DEEE}
+table.bom tr:hover td{background:rgba(255,255,255,.035)}
+table.bom td.n{color:var(--muted);font-weight:800;width:24px}
+table.bom td.q{font-weight:800;color:#fff;white-space:nowrap;text-align:right}
+table.bom td.u{color:var(--muted);font-size:10.5px}
+table.bom .nm{font-weight:700;color:#EDF2FA}
+table.bom .sp{color:var(--muted);font-size:10.5px;display:block}
+.bom-actions{display:flex;gap:8px;margin-top:12px}
+.bom-actions .btn{flex:1;justify-content:center}
+
+/* ---------- status ---------- */
+.status{
+  display:flex;align-items:center;gap:16px;padding:8px 18px;
+  background:rgba(11,18,32,.72);border-top:1px solid var(--border);
+  font-size:11.5px;color:var(--muted);font-weight:600;backdrop-filter:blur(18px);
+}
+.status .s-hint{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.status b{color:#C7D2E4;font-weight:800}
+.status .sep{width:1px;height:14px;background:var(--border)}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed;bottom:52px;left:50%;transform:translate(-50%,26px);opacity:0;
+  background:rgba(13,20,36,.96);border:1px solid var(--border-strong);color:var(--text);
+  padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;z-index:99;
+  box-shadow:var(--shadow);transition:.3s cubic-bezier(.2,.9,.3,1);pointer-events:none;
+  backdrop-filter:blur(20px);
+}
+#toast.show{transform:translate(-50%,0);opacity:1}
+
+/* ---------- scrollbars ---------- */
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25);border:2px solid transparent;background-clip:content-box}
+
+#printArea{display:none}
+@media print{
+  body{overflow:visible;background:#fff}
+  body>*{display:none!important}
+  #printArea{display:block!important;padding:0;color:#000;font-family:var(--font)}
+}
+#printArea .pr-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #FF6B35;padding-bottom:10px;margin-bottom:14px}
+#printArea h1{font-size:20px;font-weight:800}
+#printArea .pr-sub{font-size:11px;color:#64748B}
+#printArea .pr-scheme{border:1px solid #CBD5E1;border-radius:8px;padding:8px;margin-bottom:16px;page-break-inside:avoid}
+#printArea table{width:100%;border-collapse:collapse;font-size:11px}
+#printArea th{background:#F1F5F9;text-align:left;padding:6px 8px;border:1px solid #CBD5E1;font-size:10px;text-transform:uppercase}
+#printArea td{padding:6px 8px;border:1px solid #E2E8F0}
+#printArea .pr-foot{margin-top:14px;font-size:10px;color:#64748B;display:flex;justify-content:space-between}
+
+@media (max-width:1250px){
+  main{grid-template-columns:230px 1fr 300px;gap:10px;padding:10px}
+  .cat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2c2.5 3.2 1 5.2 0 6.5C10.6 6.6 11 5 12 2z" fill="#fff" opacity=".95"/>
+          <path d="M12 8.5c2.8 3.6 5 6.4 5 9.3A5 5 0 0 1 7 17.8c0-2.9 2.2-5.7 5-9.3z" fill="#fff" opacity=".72"/>
+          <path d="M4 15.5h3M17 15.5h3M4 19h3M17 19h3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1><span class="bt1">PLUMBER</span> <span class="bt2">DESIGN</span></h1>
+        <input id="projName" class="projname" type="text" maxlength="60" value="Новый проект" title="Название проекта">
+      </div>
+    </div>
+    <div class="hgrow"></div>
+    <div class="hactions">
+      <button class="btn" id="btnBg" title="Подложка: импорт плана помещения (PNG/JPG)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>План
+      </button>
+      <button class="btn" id="btnOpen" title="Открыть проект из файла .json">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Открыть
+      </button>
+      <button class="btn" id="btnSave" title="Сохранить проект в файл .json">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Файл
+      </button>
+      <button class="btn" id="btnDemo" title="Загрузить демонстрационную схему">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>Пример
+      </button>
+      <button class="btn" id="btnUndo" title="Отменить (Ctrl+Z)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>Отмена
+      </button>
+      <button class="btn" id="btnRedo" title="Повторить (Ctrl+Shift+Z)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg>Повтор
+      </button>
+      <button class="btn danger" id="btnClear" title="Очистить схему">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>Очистить
+      </button>
+      <button class="btn primary" id="btnPNG" title="Скачать наглядную схему в PNG">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Схема PNG
+      </button>
+      <button class="btn" id="btnSVG" title="Скачать схему в векторе SVG">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>SVG
+      </button>
+      <button class="btn" id="btnCheck" title="Проверить схему: подключения, мощность, скорость потока">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Проверка
+      </button>
+      <button class="btn primary" id="btnCSV" title="Скачать перечень материалов (CSV)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Ведомость
+      </button>
+      <button class="btn" id="btnPrint" title="Печать: схема + ведомость">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Печать
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <aside class="panel">
+      <div class="phead"><span class="dot"></span><h2>Комплектующие</h2></div>
+      <div class="catalog" id="catalog"></div>
+    </aside>
+
+    <section class="panel workspace">
+      <svg id="canvas" preserveAspectRatio="xMidYMid meet">
+        <defs id="defs"></defs>
+        <rect id="gridRect" x="-6000" y="-6000" width="12000" height="12000" fill="url(#grid)"/>
+        <g id="scene"></g>
+        <g id="overlay" style="pointer-events:none"></g>
+      </svg>
+      <div class="wtools">
+        <span class="chip" id="zoomChip">Масштаб <button id="zoomOut">−</button><span id="zoomVal">100%</span><button id="zoomIn">+</button><button id="zoomFit" title="Вписать схему">Fit</button></span>
+        <span class="chip hint" id="toolChip">Выберите компонент слева и кликните на поле. Тяните от точки соединения к точке — появится труба ПП.</span>
+      </div>
+      <div class="legend">
+        <span class="l1"><b></b>Подача</span>
+        <span class="l2"><b></b>Обратка</span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="tabs">
+        <div class="tab on" data-tab="props">Свойства</div>
+        <div class="tab" data-tab="bom">Ведомость материалов</div>
+      </div>
+      <div class="ipanel" id="propsPanel"></div>
+      <div class="ipanel" id="bomPanel" style="display:none"></div>
+    </aside>
+  </main>
+
+  <div class="status">
+    <span class="s-hint" id="stHint">Готово к работе</span>
+    <span class="sep"></span>
+    <span>Элементов: <b id="stItems">0</b></span>
+    <span>Соединений: <b id="stPipes">0</b></span>
+    <span>Труб: <b id="stLen">0 м</b></span>
+    <span class="sep"></span>
+    <span>Нагрузка: <b id="stLoad">—</b></span>
+    <span>Котёл: <b id="stGen">—</b></span>
+    <span class="sep"></span>
+    <span>Схема сохраняется автоматически</span>
+  </div>
+</div>
+
+<input type="file" id="bgFile" accept="image/png,image/jpeg,image/webp" style="display:none">
+<input type="file" id="projFile" accept=".json,application/json" style="display:none">
+
+<div id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+(function(){
+"use strict";
+
+var $=function(s){return document.querySelector(s)};
+var GRID=20, PX_PER_M=40, SAVE_KEY='termoschema.v1';
+
+var CATALOG=[
+ {id:'hydro',num:'1',name:'Гидрострелка',short:'Форма «Т»: пара с котла на перекладине «ГС», направление выводов контуров выбирается',group:'Распределение',
+  w:200,h:240,specs:['Ø25 (1")','Ø32 (1¼")','Ø40 (1½")','Ø50 (2")','Ø63 (2½")'],unit:'шт'},
+ {id:'pump',num:'2',name:'Насосное оборудование',short:'Циркуляционный насос',group:'Насосы и арматура',
+  w:64,h:44,specs:['Wilo-Star RS 15/4','Wilo-Star RS 15/6','Wilo-Star RS 25/40','Wilo-Star RS 25/60','Grundfos UPS 15-50','Grundfos UPS 15-60','Grundfos UPS 25-40','Grundfos UPS 25-60','Grundfos ALPHA2 15-60','Valtec V.bo 15/10'],unit:'шт'},
+ {id:'check',num:'3',name:'Обратный клапан',short:'Препятствует обратному потоку',group:'Насосы и арматура',
+  w:56,h:32,specs:['Ø20 (½")','Ø25 (¾")','Ø32 (1")','Ø40 (1¼")','Ø50 (1½")','Ø63 (2")'],unit:'шт'},
+ {id:'valve',num:'4',name:'Кран шаровой',short:'Перекрытие потока',group:'Насосы и арматура',
+  w:56,h:34,specs:['Ø20 (½")','Ø25 (¾")','Ø32 (1")','Ø40 (1¼")','Ø50 (1½")','Ø63 (2")'],unit:'шт'},
+ {id:'union',num:'5',name:'Кран с американкой',short:'С быстросъёмной муфтой',group:'Насосы и арматура',
+  w:56,h:34,specs:['Ø20 (½")','Ø25 (¾")','Ø32 (1")','Ø40 (1¼")','Ø50 (1½")','Ø63 (2")'],unit:'шт'},
+ {id:'pipe',num:'6',name:'Труба ПП',short:'Полипропилен PP-RC',group:'Трубопроводы',
+  w:0,h:0,specs:['PP-РЦ Ø20','PP-РЦ Ø25','PP-РЦ Ø32','PP-РЦ Ø40','PP-РЦ Ø50','PP-РЦ Ø63'],unit:'м'},
+ {id:'tee',num:'7',name:'Тройник ПП',short:'Разветвление 90°',group:'Трубопроводы',
+  w:64,h:44,specs:['Ø20×Ø20×Ø20','Ø25×Ø25×Ø25','Ø32×Ø32×Ø32','Ø40×Ø40×Ø40','Ø50×Ø50×Ø50','Ø63×Ø63×Ø63'],unit:'шт'},
+ {id:'elbow',num:'8',name:'Угол ПП 90°',short:'Поворот трубопровода',group:'Трубопроводы',
+  w:44,h:44,specs:['Ø20','Ø25','Ø32','Ø40','Ø50','Ø63'],unit:'шт'},
+ {id:'balancing',num:'9',name:'Балансировочный вентиль',short:'Регулировка потока радиатора',group:'Насосы и арматура',
+  w:56,h:36,specs:['Ø20 (½")','Ø25 (¾")','Ø32 (1")','Ø40 (1¼")','Ø50 (1½")','Ø63 (2")'],unit:'шт'},
+ {id:'radiator',num:'10',name:'Радиатор',short:'Отопительный прибор, подача снизу слева, обратка снизу справа',group:'Отопительные приборы',
+  w:132,h:74,specs:['Алюминиевый 500×80, 10 сек.','Биметаллический 500×80, 10 сек.','Биметаллический 350×80, 8 сек.','Стальной панельный Type 22','Чугунный МС-140, 10 сек.'],unit:'шт'},
+ {id:'airvent',num:'11',name:'Автоматический воздухоотводчик',short:'Удаление воздуха',group:'Отопительные приборы',
+  w:30,h:40,specs:['Прямой Ø16','Прямой с клапаном Ø16','Угловой Ø16'],unit:'шт'},
+ {id:'label',num:'12',name:'Табличка-подпись',short:'Подпись элемента на схеме',group:'Подписи',
+  w:100,h:28,specs:['Текст подписи'],unit:'шт'},
+ {id:'boiler',num:'13',name:'Котел настенный',short:'Настенный отопительный котел, подача снизу слева, обратка снизу справа',group:'Источники тепла',
+  w:110,h:120,specs:['Двухконтурный 24 кВт','Двухконтурный 30 кВт','Одноконтурный 24 кВт','Одноконтурный 35 кВт','Конденсационный 30 кВт'],unit:'шт'},
+ {id:'dhw',num:'14',name:'Бойлер косвенного нагрева',short:'Нагрев ГВС от системы отопления: теплообменник снизу, ХВС/ГВС по бокам',group:'Источники тепла',
+  w:100,h:160,specs:['80 л','120 л','200 л','300 л','500 л'],unit:'шт'},
+ {id:'extank',num:'15',name:'Расширительный бак настенный',short:'Мембранный бак настенного монтажа, подключение снизу',group:'Источники тепла',
+  w:84,h:56,specs:['8 л','12 л','18 л','24 л','50 л'],unit:'шт'},
+ {id:'sgboiler',num:'16',name:'Группа безопасности для котла',short:'Группа безопасности котла: воздухоотводчик, манометр, предохранительный клапан',group:'Источники тепла',
+  w:56,h:100,specs:['DN20 (½")','DN25 (¾")','DN32 (1")'],unit:'шт'},
+ {id:'sgdhw',num:'17',name:'Группа безопасности для бойлера',short:'Группа безопасности бойлера: воздухоотводчик, манометр, предохранительный клапан',group:'Источники тепла',
+  w:56,h:100,specs:['DN20 (½")','DN25 (¾")','DN32 (1")'],unit:'шт'},
+ {id:'pumpgrp',num:'18',name:'Группа быстрого монтажа для насоса',short:'Насосная группа без смесительного узла: краны, обратный клапан, насос',group:'Насосы и арматура',
+  w:150,h:56,specs:['DN20 (½")','DN25 (¾")','DN32 (1")'],unit:'шт'},
+ {id:'pumpmix',num:'19',name:'Группа быстрого монтажа с насосно-смесительным узлом',short:'Насосно-смесительная группа: трёхходовой клапан, насос, краны, обратный клапан',group:'Насосы и арматура',
+  w:150,h:96,specs:['DN20 (½")','DN25 (¾")','DN32 (1")'],unit:'шт'},
+ {id:'mancol',num:'20',name:'Коллектор для теплых полов',short:'Две планки: подача сверху, обратка снизу, контуры между ними; число контуров выбирается',group:'Распределение',
+  w:200,h:116,specs:['Ø25 (1")','Ø32 (1¼")','Ø40 (1½")'],unit:'шт'},
+ {id:'mixunit',num:'21',name:'Насосно-смесительный узел',short:'Трёхходовой смесительный клапан, циркуляционный насос и обратный клапан',group:'Насосы и арматура',
+  w:110,h:80,specs:['DN20 (½")','DN25 (¾")','DN32 (1")'],unit:'шт'},
+ {id:'bushing',num:'22',name:'Футорка латунная переходная',short:'Переходная вставка НР-ВН разных диаметров',group:'Соединительные детали',
+  w:40,h:28,specs:['¼"×⅛"','⅜"×¼"','½"×⅜"','¾"×½"','1"×½"','1"×¾"','1¼"×1"','1½"×1¼"','2"×1½"'],unit:'шт'},
+ {id:'mcoupling',num:'23',name:'Муфта латунная ВН-ВН',short:'Две внутренние резьбы, равных и переходных диаметров',group:'Соединительные детали',
+  w:44,h:28,specs:['½"×½"','¾"×¾"','1"×1"','1¼"×1¼"','1½"×1½"','2"×2"','¾"×½"','1"×½"','1"×¾"','1¼"×1"','1½"×1¼"','2"×1½"'],unit:'шт'},
+ {id:'ufc',num:'24',name:'Контур теплого пола (улитка)',short:'Спиральная укладка трубы PEX от коллектора: подача и обратка, длина контура выбирается',group:'Теплый пол',
+  w:200,h:160,specs:['PEX-AL-PEX Ø16','PEX-AL-PEX Ø20','PEX-AL-PEX Ø25','PEX Ø16','PEX Ø20'],unit:'м'},
+ {id:'pexp',num:'25',name:'Труба PEX',short:'Сшитый полиэтилен PEX-AL-PEX, для тёплых полов и отопления',group:'Трубопроводы',
+  w:0,h:0,specs:['PEX-AL-PEX Ø16','PEX-AL-PEX Ø20','PEX-AL-PEX Ø25','PEX-AL-PEX Ø32','PEX Ø16','PEX Ø20','PEX Ø25','PEX Ø32'],unit:'м'},
+ {id:'tvalve',num:'26',name:'Термостатический клапан',short:'Регулирует подачу по температуре, с термоголовкой',group:'Насосы и арматура',
+  w:56,h:36,specs:['Ø20 (½")','Ø25 (¾")','Ø32 (1")'],unit:'шт'},
+ {id:'thead',num:'27',name:'Термоголовка',short:'Термостатический привод для клапана',group:'Насосы и арматура',
+  w:32,h:40,specs:['Универсальная M30×1.5','RTS','RTS-N'],unit:'шт'},
+ {id:'shutoff',num:'28',name:'Клапан запорный',short:'Полное перекрытие потока, прямой проход',group:'Насосы и арматура',
+  w:44,h:26,specs:['Ø20 (½")','Ø25 (¾")','Ø32 (1")','Ø40 (1¼")','Ø50 (1½")'],unit:'шт'},
+ {id:'tee3',num:'29',name:'Трёхходовой клапан',short:'Разделение или смешение потоков',group:'Насосы и арматура',
+  w:48,h:48,specs:['DN20 (½")','DN25 (¾")','DN32 (1")'],unit:'шт'},
+ {id:'cross',num:'30',name:'Крестовина ПП',short:'Разветвление на четыре ветви',group:'Трубопроводы',
+  w:48,h:48,specs:['Ø20','Ø25','Ø32','Ø40'],unit:'шт'},
+ {id:'boilerTT',num:'31',name:'Котёл твердотопливный',short:'Твердотопливный котёл, подача снизу слева, обратка снизу справа',group:'Источники тепла',
+  w:110,h:120,specs:['18 кВт','24 кВт','30 кВт'],unit:'шт'},
+ {id:'boilerEl',num:'32',name:'Котёл электрический',short:'Электрический котёл, подача снизу слева, обратка снизу справа',group:'Источники тепла',
+  w:90,h:100,specs:['9 кВт','15 кВт','24 кВт'],unit:'шт'},
+ {id:'dhwDirect',num:'33',name:'Бойлер прямого нагрева',short:'Накопительный водонагреватель с ТЭН, ХВС слева, ГВС справа',group:'Источники тепла',
+  w:84,h:120,specs:['50 л','80 л','100 л','150 л'],unit:'шт'}
+];
+var CAT={}; CATALOG.forEach(function(c){CAT[c.id]=c});
+
+var state={items:[],pipes:[],sel:null,tool:null,group:[],name:'Новый проект',bg:null,branches:[],diag:null};
+var BR_COLORS=['#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4','#EF4444','#84CC16'];
+var POWER_TYPES={radiator:1,boiler:1,boilerTT:1,boilerEl:1,ufc:1};
+var BOILER_TYPES={boiler:1,boilerTT:1,boilerEl:1};
+var history=[],future=[];
+var view={x:0,y:0,w:1200,h:760};
+var link=null, drag=null, spaceDown=false;
+var uidc=0;
+function uid(){return 'x'+(Date.now().toString(36))+(uidc++)}
+
+function themeColors(light){
+  return light
+   ?{bg:'#FFFFFF',grid:'#E9EEF6',stroke:'#334155',fill:'#FFFFFF',text:'#0F172A',muted:'#64748B',
+     supply:'#EA580C',ret:'#0369A1',accent:'#EA580C',chip:'#F1F5F9'}
+   :{bg:'#0B1220',grid:'rgba(255,255,255,.055)',stroke:'#CBD5E1',fill:'#0E1626',text:'#E2E8F0',muted:'#94A3B8',
+     supply:'#FF6B35',ret:'#38BDF8',accent:'#FF6B35',chip:'rgba(255,255,255,.06)'};
+}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+/* ---------- geometry ---------- */
+function specDn(spec){
+  var m=/Ø(\d+)/.exec(spec||''); return m?parseInt(m[1],10):20;
+}
+var FIT_TYPES={check:1,valve:1,union:1,balancing:1,tee:1,elbow:1,bushing:1,mcoupling:1,tvalve:1,shutoff:1,tee3:1,cross:1};
+function fitScale(item){
+  if(!FIT_TYPES[item.type]) return 1;
+  var dn=specDn(item.spec);
+  return Math.max(1, Math.min(1.5, 1+(dn-20)*0.0116));
+}
+function applyDims(it){
+  var cat=CAT[it.type]; if(!cat) return;
+  if(it.type==='label'){ it.w=Math.max(70,Math.min(280,Math.round(24+(it.name||'Подпись').length*7.2))); it.h=28; return; }
+  if(it.type==='hydro'){
+    var hg=hydroGeom(it); it.w=hg.w; it.h=hg.h;
+    return;
+  }
+  if(it.type==='mancol'){
+    var mg=manGeom(it); it.w=mg.w; it.h=mg.h;
+    return;
+  }
+  it.w=cat.w; it.h=cat.h;
+  if(FIT_TYPES[it.type]){ var k=fitScale(it); it.w=Math.round(cat.w*k); it.h=Math.round(cat.h*k); }
+}
+function teeY(h){return Math.round(h*24/44)}
+function hydroPairs(item){
+  var n=parseInt(item.pairs,10); return (n>=1&&n<=7)?n:2;
+}
+function manCircuits(item){
+  var n=parseInt(item.circuits,10); return (n>=2&&n<=12)?n:6;
+}
+function manGeom(item){
+  var n=manCircuits(item);
+  var PITCH=48, MG=36, BH=30, GAP=48;
+  var w=MG*2+n*PITCH;
+  var h=BH*2+GAP;
+  return {n:n,PITCH:PITCH,MG:MG,BH:BH,GAP:GAP,w:w,h:h};
+}
+function hydroHDir(item){
+  return item.hdir==='both'?'both':'side';
+}
+function ufcLenM(item){
+  var n=parseFloat(item.clen); return (n>=20&&n<=250)?Math.round(n):90;
+}
+function itemPower(item){
+  var p=parseFloat(item.power);
+  return (p>0&&p<=200)?p:null;
+}
+function specPowerKW(spec){
+  var m=/(\d+(?:[.,]\d+)?)\s*кВт/i.exec(spec||''); return m?parseFloat(m[1].replace(',','.')):null;
+}
+function defaultPower(it){
+  if(it.type==='radiator') return 1.5;
+  if(BOILER_TYPES[it.type]){ var sp=specPowerKW(it.spec); if(sp) return sp; return it.type==='boilerEl'?9:24; }
+  if(it.type==='ufc') return Math.round(ufcLenM(it)*0.1*10)/10;
+  return null;
+}
+function boilerKW(it){
+  var p=itemPower(it); if(p) return p;
+  return specPowerKW(it.spec)||(BOILER_TYPES[it.type]?(it.type==='boilerEl'?9:24):0);
+}
+function loadSumKW(){
+  var s=0; state.items.forEach(function(it){
+    if(it.type==='radiator'||it.type==='ufc'){ var p=itemPower(it); if(p) s+=p; }
+  }); return s;
+}
+function genSumKW(){
+  var s=0; state.items.forEach(function(it){ if(BOILER_TYPES[it.type]) s+=boilerKW(it); }); return s;
+}
+function branchById(id){
+  if(!id) return null;
+  for(var i=0;i<state.branches.length;i++) if(state.branches[i].id===id) return state.branches[i];
+  return null;
+}
+function branchName(id){ var b=branchById(id); return b?b.name:''; }
+function addBranch(name){
+  var b={id:uid(),name:name||('Ветка '+(state.branches.length+1)),color:BR_COLORS[state.branches.length%BR_COLORS.length]};
+  state.branches.push(b); return b;
+}
+function manCtab(item){
+  var n=manCircuits(item);
+  if(!item.ctab||!item.ctab.length) item.ctab=[];
+  while(item.ctab.length<n) item.ctab.push({name:'Контуp '+(item.ctab.length+1),area:0,len:80});
+  if(item.ctab.length>n) item.ctab.length=n;
+  for(var i=0;i<n;i++){
+    var r=item.ctab[i];
+    if(!r||typeof r!=='object') r=item.ctab[i]={};
+    if(!r.name) r.name='Контуp '+(i+1);
+    if(!(parseFloat(r.area)>=0)) r.area=0;
+    if(!(parseFloat(r.len)>0)) r.len=80;
+  }
+  return item.ctab;
+}
+function circuitFlowLmin(area){
+  var a=parseFloat(area)||0;
+  if(a<=0) return 0;
+  return Math.round(a*100/(4187*10)*60*10)/10;
+}
+function pipeFlowInfo(p){
+  if(!p) return null;
+  var pm=pipeMaterial(p);
+  var da=p.a?itemById(p.a.itemId):null, db=p.b?itemById(p.b.itemId):null;
+  var dev=null;
+  function isDev(it){ return it&&(it.type==='radiator'||it.type==='ufc'); }
+  if(isDev(da)&&!isDev(db)) dev=da; else if(isDev(db)&&!isDev(da)) dev=db;
+  if(!dev) return null;
+  var P=itemPower(dev); if(!P) return null;
+  var G=Math.round(P*0.7165*10)/10;
+  var D=parseInt(String(p.diameter).replace('Ø',''),10);
+  if(!(D>0)) return null;
+  var A=Math.PI*Math.pow(D/2000,2);
+  var v=Math.round((G/60/1000/A)*100)/100;
+  return {power:P,G:G,v:v,D:D};
+}
+function ufcGeom(item){
+  var w=item.w,h=item.h;
+  var cx=Math.round(w/2), cy=Math.round(h/2)-6;
+  var turns=2.25, rmax=Math.min(w,h)/2-20, rmin=14, gap=9;
+  return {cx:cx,cy:cy,turns:turns,rmax:rmax,rmin:rmin,gap:gap,len:ufcLenM(item)};
+}
+function ufcSpiral(ug){
+  var sup=[], ret=[], N=72, i, t, ang, r;
+  var a0=Math.PI*0.75, a1=Math.PI*0.25;
+  for(i=0;i<=N;i++){
+    t=i/N; ang=a0+t*ug.turns*2*Math.PI;
+    r=ug.rmax-(ug.rmax-ug.rmin)*t;
+    sup.push({x:ug.cx+r*Math.cos(ang), y:ug.cy+r*Math.sin(ang)});
+  }
+  for(i=0;i<=N;i++){
+    t=i/N; ang=a1+t*ug.turns*2*Math.PI;
+    r=(ug.rmax-ug.gap)-(ug.rmax-ug.gap-ug.rmin)*t;
+    ret.push({x:ug.cx+r*Math.cos(ang), y:ug.cy+r*Math.sin(ang)});
+  }
+  return {sup:sup, ret:ret};
+}
+function hydroGeom(item){
+  var n=hydroPairs(item);
+  var PITCH=80, MG=40, BH=56, SW=96;
+  var SH=MG+(2*n-1)*PITCH+MG;
+  var w=SW+80, h=BH+SH;
+  return {n:n,PITCH:PITCH,MG:MG,BH:BH,SW:SW,SH:SH,w:w,h:h,
+    cx:Math.round(w/2),sx:Math.round((w-SW)/2)};
+}
+function getPorts(item){
+  var w=item.w,h=item.h;
+  switch(item.type){
+    case 'hydro':{
+      var hg=hydroGeom(item), ps=[], i;
+      ps.push({id:'a',x:hg.cx-40,y:0,dir:270,label:'Подача с котла (вход)'});
+      ps.push({id:'b',x:hg.cx+40,y:0,dir:270,label:'Обратка к котлу (выход)'});
+      if(hydroHDir(item)==='both'){
+        for(i=0;i<hg.n;i++){
+          var y=hg.BH+hg.MG+2*i*hg.PITCH;
+          var left=(i%2===1);
+          ps.push({id:'s'+i,x:left?hg.sx:hg.sx+hg.SW,y:y,dir:left?180:0,label:'Подача в контур '+(i+1)});
+          ps.push({id:'r'+i,x:left?hg.sx:hg.sx+hg.SW,y:y+hg.PITCH,dir:left?180:0,label:'Обратка из контура '+(i+1)});
+        }
+      } else {
+        for(i=0;i<hg.n;i++){
+          var ys=hg.BH+hg.MG+2*i*hg.PITCH;
+          ps.push({id:'s'+i,x:hg.sx+hg.SW,y:ys,dir:0,label:'Подача в контур '+(i+1)});
+          ps.push({id:'r'+i,x:hg.sx+hg.SW,y:ys+hg.PITCH,dir:0,label:'Обратка из контура '+(i+1)});
+        }
+      }
+      return ps;}
+    case 'pump': return [
+      {id:'a',x:0,y:h/2,dir:180,label:'Всасывание'},{id:'b',x:w,y:h/2,dir:0,label:'Напор'}];
+    case 'check': return [
+      {id:'a',x:0,y:h/2,dir:180,label:'Вход'},{id:'b',x:w,y:h/2,dir:0,label:'Выход'}];
+    case 'valve': case 'union': case 'balancing': case 'tvalve': case 'shutoff': return [
+      {id:'a',x:0,y:h/2+3,dir:180,label:'Вход'},{id:'b',x:w,y:h/2+3,dir:0,label:'Выход'}];
+    case 'tee':{
+      var ty=teeY(h); return [
+      {id:'a',x:0,y:ty,dir:180,label:'Вход 1'},{id:'b',x:w,y:ty,dir:0,label:'Вход 2'},{id:'c',x:w/2,y:h,dir:90,label:'Отвод'}];}
+    case 'tee3': return [
+      {id:'a',x:0,y:h/2,dir:180,label:'Вход 1'},{id:'b',x:w,y:h/2,dir:0,label:'Вход 2'},{id:'c',x:w/2,y:h,dir:90,label:'Вход 3'}];
+    case 'cross': return [
+      {id:'a',x:0,y:h/2,dir:180,label:'Вход 1'},{id:'b',x:w,y:h/2,dir:0,label:'Вход 2'},
+      {id:'c',x:w/2,y:0,dir:270,label:'Вход 3'},{id:'d',x:w/2,y:h,dir:90,label:'Вход 4'}];
+    case 'elbow': return [
+      {id:'a',x:0,y:teeY(h),dir:180,label:'Вход'},{id:'b',x:w/2,y:h,dir:90,label:'Выход'}];
+    case 'radiator': return [
+      {id:'a',x:18,y:h,dir:90,label:'Подача (вход, снизу слева)'},{id:'b',x:w-18,y:h,dir:90,label:'Обратка (выход, снизу справа)'}];
+    case 'airvent': return [
+      {id:'a',x:w/2,y:h,dir:90,label:'Подключение'}];
+    case 'boiler': case 'boilerTT': case 'boilerEl': return [
+      {id:'a',x:18,y:h,dir:90,label:'Подача (выход, снизу слева)'},{id:'b',x:w-18,y:h,dir:90,label:'Обратка (вход, снизу справа)'}];
+    case 'dhwDirect': return [
+      {id:'c',x:0,y:h-26,dir:180,label:'ХВС (вход)'},{id:'d',x:w,y:h-26,dir:0,label:'ГВС (выход)'}];
+    case 'dhw': return [
+      {id:'a',x:18,y:h,dir:90,label:'Подача с котла (вход в бойлер)'},{id:'b',x:w-18,y:h,dir:90,label:'Обратка к котлу (выход из бойлера)'},
+      {id:'c',x:0,y:22,dir:180,label:'ХВС (вход)'},{id:'d',x:w,y:22,dir:0,label:'ГВС (выход)'}];
+    case 'extank': return [
+      {id:'a',x:w/2,y:h,dir:90,label:'Подключение'}];
+    case 'sgboiler': case 'sgdhw': return [
+      {id:'a',x:w/2,y:h,dir:90,label:'Подключение'}];
+    case 'pumpgrp': return [
+      {id:'a',x:0,y:h/2,dir:180,label:'Подача (вход)'},{id:'b',x:w,y:h/2,dir:0,label:'Подача (выход)'}];
+    case 'pumpmix': return [
+      {id:'a',x:0,y:20,dir:180,label:'Подача с коллектора (вход)'},{id:'b',x:w,y:20,dir:0,label:'Смешанная подача в контур (выход)'},
+      {id:'c',x:w,y:h-20,dir:0,label:'Обратка из контура (вход)'},{id:'d',x:0,y:h-20,dir:180,label:'Обратка к коллектору (выход)'}];
+    case 'mancol':{
+      var mg=manGeom(item), mps=[], mi;
+      mps.push({id:'a',x:0,y:mg.BH/2,dir:180,label:'Подача с коллектора/гидрострелки (вход)'});
+      mps.push({id:'b',x:0,y:mg.BH+mg.GAP+mg.BH/2,dir:180,label:'Обратка к коллектору/гидрострелке (выход)'});
+      for(mi=0;mi<mg.n;mi++){
+        var mx=mg.MG+mg.PITCH/2+mi*mg.PITCH;
+        mps.push({id:'s'+mi,x:mx,y:mg.BH,dir:90,label:'Подача в контур ТП '+(mi+1)});
+        mps.push({id:'r'+mi,x:mx,y:mg.BH+mg.GAP+mg.BH,dir:90,label:'Обратка из контура ТП '+(mi+1)});
+      }
+      return mps;}
+    case 'mixunit': return [
+      {id:'a',x:0,y:22,dir:180,label:'Подача с коллектора (вход)'},{id:'b',x:w,y:22,dir:0,label:'Смешанная подача (выход)'},
+      {id:'c',x:w,y:h-22,dir:0,label:'Обратка (вход)'},{id:'d',x:0,y:h-22,dir:180,label:'Обратка к коллектору (выход)'}];
+    case 'bushing': case 'mcoupling': return [
+      {id:'a',x:0,y:h/2,dir:180,label:'Вход'},{id:'b',x:w,y:h/2,dir:0,label:'Выход'}];
+    case 'ufc':{
+      var ugP=ufcGeom(item);
+      var axp=Math.round(ugP.cx+ugP.rmax*Math.cos(Math.PI*0.75));
+      var bxp=Math.round(ugP.cx+(ugP.rmax-ugP.gap)*Math.cos(Math.PI*0.25));
+      return [
+      {id:'a',x:axp,y:h,dir:90,label:'Подача с коллектора (вход)'},
+      {id:'b',x:bxp,y:h,dir:90,label:'Обратка к коллектору (выход)'}];}
+  }
+  return [];
+}
+function absPort(item,portId){
+  var ps=getPorts(item),p=null;
+  for(var i=0;i<ps.length;i++) if(ps[i].id===portId) p=ps[i];
+  if(!p) return null;
+  var ang=(item.angle||0)*Math.PI/180, cos=Math.cos(ang), sin=Math.sin(ang);
+  var cx=item.w/2, cy=item.h/2, lx=p.x-cx, ly=p.y-cy;
+  if(item.type!=='label'){
+    if(item.fx) lx=-lx;
+    if(item.fy) ly=-ly;
+  }
+  var dir=p.dir;
+  if(item.type!=='label'){
+    if(item.fx) dir=(180-dir)%360;
+    if(item.fy) dir=(-dir)%360;
+    dir=((dir%360)+360)%360;
+  }
+  return {x:item.x+cx+lx*cos-ly*sin, y:item.y+cy+lx*sin+ly*cos,
+          dir:((dir+(item.angle||0))%360+360)%360, label:p.label};
+}
+function portPosAt(item,port,x,y){
+  var ang=(item.angle||0)*Math.PI/180, cos=Math.cos(ang), sin=Math.sin(ang);
+  var cx=item.w/2, cy=item.h/2, lx=port.x-cx, ly=port.y-cy;
+  if(item.type!=='label'){
+    if(item.fx) lx=-lx;
+    if(item.fy) ly=-ly;
+  }
+  return {x:x+cx+lx*cos-ly*sin, y:y+cy+lx*sin+ly*cos};
+}
+var lastSnapPort=null;
+function magneticSnap(item,x,y){
+  var TH=28, best=TH*TH, bdx=0, bdy=0, snapPort=null;
+  var ps=getPorts(item);
+  for(var i=0;i<ps.length;i++){
+    var pp=portPosAt(item,ps[i],x,y);
+    for(var j=0;j<state.items.length;j++){
+      var o=state.items[j]; if(o.id===item.id) continue;
+      var ops=getPorts(o);
+      for(var k=0;k<ops.length;k++){
+        var op=absPort(o,ops[k].id); if(!op) continue;
+        var dx=op.x-pp.x, dy=op.y-pp.y, d2=dx*dx+dy*dy;
+        if(d2<best){ best=d2; bdx=dx; bdy=dy; snapPort={x:op.x,y:op.y,label:op.label}; }
+      }
+    }
+  }
+  lastSnapPort=snapPort;
+  return {x:x+bdx, y:y+bdy};
+}
+function nearestPort(x,y,exItem,exPort,th){
+  var best=th*th, res=null;
+  for(var j=0;j<state.items.length;j++){
+    var o=state.items[j]; if(o.id===exItem) continue;
+    var ops=getPorts(o);
+    for(var k=0;k<ops.length;k++){
+      var op=absPort(o,ops[k].id); if(!op) continue;
+      var dx=op.x-x, dy=op.y-y, d2=dx*dx+dy*dy;
+      if(d2<best){ best=d2; res={itemId:o.id,portId:ops[k].id,x:op.x,y:op.y,dir:op.dir,label:op.label}; }
+    }
+  }
+  return res;
+}
+function snap(v){return Math.round(v/GRID)*GRID}
+function dedupe(pts){
+  var out=[];
+  for(var i=0;i<pts.length;i++){
+    var p=pts[i], last=out[out.length-1];
+    if(!last||Math.abs(last.x-p.x)>0.4||Math.abs(last.y-p.y)>0.4) out.push({x:p.x,y:p.y});
+  }
+  return out;
+}
+function routePoints(a,da,b,db){
+  var dxb=b.x-a.x, dyb=b.y-a.y, dist=Math.hypot(dxb,dyb)||1;
+  var va=dirVec(da), vb=dirVec(db);
+  var La=(va.x*dxb+va.y*dyb)/dist>0.5?Math.min(20,dist*0.35):0;
+  var Lb=(-vb.x*dxb-vb.y*dyb)/dist>0.5?Math.min(20,dist*0.35):0;
+  if(La+Lb>dist-14){ var room=Math.max(0,dist-14); if(La>0&&Lb>0){La=Math.min(La,room/2);Lb=Math.min(Lb,room/2);} else if(La>0)La=Math.min(La,room); else Lb=Math.min(Lb,room); }
+  if(La<6)La=0; if(Lb<6)Lb=0;
+  var a1={x:a.x+va.x*La,y:a.y+va.y*La}, b1={x:b.x+vb.x*Lb,y:b.y+vb.y*Lb};
+  var cands=[
+    zPath(a,a1,b1,b,Math.abs(va.x)>=Math.abs(va.y)),
+    zPath(a,a1,b1,b,!(Math.abs(va.x)>=Math.abs(va.y))),
+    zPath(a,a,b1,b,Math.abs(dxb)>=Math.abs(dyb)),
+    zPath(a,a1,b,b,Math.abs(dxb)>=Math.abs(dyb)),
+    zPath(a,a,b,b,Math.abs(dxb)>=Math.abs(dyb)),
+    plainOrtho(a,b)
+  ];
+  for(var i=0;i<cands.length;i++){
+    var c=cleanPath(cands[i]);
+    if(c&&pathOk(c)) return c;
+  }
+  var fb=cleanPath(plainOrtho(a,b));
+  return fb||dedupe([a,b]);
+}
+function zPath(a,a1,b1,b,viaX){
+  var pts=[a,a1];
+  if(Math.abs(a1.x-b1.x)<0.6||Math.abs(a1.y-b1.y)<0.6){ pts.push(b1,b); }
+  else if(viaX){ var mx=(a1.x+b1.x)/2; pts.push({x:mx,y:a1.y},{x:mx,y:b1.y},b1,b); }
+  else { var my=(a1.y+b1.y)/2; pts.push({x:a1.x,y:my},{x:b1.x,y:my},b1,b); }
+  return pts;
+}
+function plainOrtho(a,b){
+  if(Math.abs(a.x-b.x)<0.6||Math.abs(a.y-b.y)<0.6) return [a,b];
+  var pts;
+  if(Math.abs(a.x-b.x)>Math.abs(a.y-b.y)) pts=[a,{x:b.x,y:a.y},b];
+  else pts=[a,{x:a.x,y:b.y},b];
+  return pts;
+}
+function dirVec(deg){ var r=deg*Math.PI/180; return {x:Math.cos(r),y:Math.sin(r)}; }
+function cleanPath(pts){
+  var d=dedupe(pts), out=[d[0]], i;
+  for(i=1;i<d.length-1;i++){
+    var p0=out[out.length-1], p1=d[i], p2=d[i+1];
+    var d1x=p1.x-p0.x, d1y=p1.y-p0.y, d2x=p2.x-p1.x, d2y=p2.y-p1.y;
+    if(Math.abs(d1x*d2y-d1y*d2x)<0.4&&d1x*d2x+d1y*d2y>0) continue;
+    out.push(p1);
+  }
+  out.push(d[d.length-1]);
+  return out;
+}
+function pathOk(pts){
+  var pdx=0,pdy=0,has=false;
+  for(var i=1;i<pts.length;i++){
+    var dx=pts[i].x-pts[i-1].x, dy=pts[i].y-pts[i-1].y, l=Math.hypot(dx,dy);
+    if(l<0.4) return false;
+    if(has){
+      var cr=Math.abs(pdx*dy-pdy*dx);
+      if(cr<0.5*Math.max(l,Math.hypot(pdx,pdy))&&pdx*dx+pdy*dy<0) return false;
+    }
+    pdx=dx; pdy=dy; has=true;
+  }
+  return true;
+}
+function orthoRoute(p1,p2){ return cleanPath(plainOrtho(p1,p2))||[p1,p2]; }
+function viaRoute(a,da,b,db,wx,wy){
+  var m={x:wx,y:wy};
+  var va=dirVec(da), vb=dirVec(db);
+  var d1x=m.x-a.x, d1y=m.y-a.y, dist1=Math.hypot(d1x,d1y)||1;
+  var La=(va.x*d1x+va.y*d1y)/dist1>0.5?Math.min(20,dist1*0.35):0; if(La<6)La=0;
+  var d2x=b.x-m.x, d2y=b.y-m.y, dist2=Math.hypot(d2x,d2y)||1;
+  var Lb=(-vb.x*d2x-vb.y*d2y)/dist2>0.5?Math.min(20,dist2*0.35):0; if(Lb<6)Lb=0;
+  var a1={x:a.x+va.x*La,y:a.y+va.y*La}, b1={x:b.x+vb.x*Lb,y:b.y+vb.y*Lb};
+  var exA=legFrom(a1,va,m), enB=legTo(m,vb,b1);
+  var cands=[
+    [a,a1].concat(exA.slice(1)).concat(enB.slice(1)).concat([b1,b]),
+    [a].concat(exA).concat(enB.slice(1)).concat([b]),
+    [a,m,b]
+  ];
+  for(var i=0;i<cands.length;i++){
+    var c=cleanPath(cands[i]);
+    if(c&&pathOk(c)) return c;
+  }
+  return cleanPath([a,a1,m,b1,b])||dedupe([a,m,b]);
+}
+function legFrom(p,va,q){
+  if(Math.abs(va.x)>=Math.abs(va.y)) return [p,{x:q.x,y:p.y},q];
+  return [p,{x:p.x,y:q.y},q];
+}
+function legTo(p,vb,q){
+  if(Math.abs(vb.x)>=Math.abs(vb.y)) return [p,{x:p.x,y:q.y},q];
+  return [p,{x:q.x,y:p.y},q];
+}
+function pipePoints(p){
+  if(p.a&&p.b){
+    var ia=itemById(p.a.itemId), ib=itemById(p.b.itemId);
+    if(!ia||!ib) return null;
+    var pa=absPort(ia,p.a.portId), pb=absPort(ib,p.b.portId);
+    if(!pa||!pb) return null;
+    if(p.wx!=null&&p.wy!=null) return viaRoute(pa,pa.dir,pb,pb.dir,p.wx,p.wy);
+    return routePoints(pa,pa.dir,pb,pb.dir);
+  }
+  if(p.a){ var i1=itemById(p.a.itemId); if(!i1) return null; var q1=absPort(i1,p.a.portId); if(!q1) return null; return orthoRoute(q1,{x:p.bx,y:p.by}); }
+  if(p.b){ var i2=itemById(p.b.itemId); if(!i2) return null; var q2=absPort(i2,p.b.portId); if(!q2) return null; return orthoRoute({x:p.ax,y:p.ay},q2); }
+  return orthoRoute({x:p.ax,y:p.ay},{x:p.bx,y:p.by});
+}
+function ptsLen(pts){var s=0;for(var i=1;i<pts.length;i++){s+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y)}return s}
+function pipeLenM(p){var pts=pipePoints(p); return pts?ptsLen(pts)/PX_PER_M:0}
+function itemById(id){for(var i=0;i<state.items.length;i++) if(state.items[i].id===id) return state.items[i]; return null}
+function pipeById(id){for(var i=0;i<state.pipes.length;i++) if(state.pipes[i].id===id) return state.pipes[i]; return null}
+function inGroup(id){return state.group.indexOf(id)>-1}
+function groupClear(){ state.group=[]; }
+function groupToggle(id){
+  var i=state.group.indexOf(id);
+  if(i>-1) state.group.splice(i,1); else state.group.push(id);
+}
+function itemBBox(it){
+  var a=(it.angle||0)*Math.PI/180, cos=Math.abs(Math.cos(a)), sin=Math.abs(Math.sin(a));
+  var w2=(it.w*cos+it.h*sin)/2, h2=(it.w*sin+it.h*cos)/2;
+  return {x:it.x+it.w/2-w2, y:it.y+it.h/2-h2, w:w2*2, h:h2*2};
+}
+var clip=null;
+
+/* ---------- symbols ---------- */
+function symbolMarkup(item,c){
+  var st=c.stroke, w=item.w, h=item.h, cx=w/2, cy=h/2;
+  switch(item.type){
+    case 'hydro':{
+      var hg=hydroGeom(item);
+      var hs=''
+        +'<rect x="1.5" y="1.5" width="'+(hg.w-3)+'" height="'+(hg.BH-3)+'" rx="8" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+        +'<rect x="'+(hg.sx+1.5)+'" y="'+(hg.BH-3)+'" width="'+(hg.SW-3)+'" height="'+(hg.SH)+'" rx="7" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>';
+      var hps=getPorts(item), hi;
+      for(hi=0;hi<hps.length;hi++){
+        var hp=hps[hi];
+        var isSup=(hp.id==='a'||hp.id.charAt(0)==='s');
+        var hcol=isSup?c.supply:c.ret;
+        if(hp.dir===270){
+          hs+='<line x1="'+hp.x+'" y1="2" x2="'+hp.x+'" y2="-10" stroke="'+hcol+'" stroke-width="4" stroke-linecap="round"/>'
+            +'<path d="M'+(hp.x-4)+' -2 L'+(hp.x+4)+' -2 L'+hp.x+' -10 Z" fill="'+hcol+'"/>';
+        } else if(hp.dir===180){
+          hs+='<line x1="'+(hg.sx+2)+'" y1="'+hp.y+'" x2="'+(hg.sx-10)+'" y2="'+hp.y+'" stroke="'+hcol+'" stroke-width="4" stroke-linecap="round"/>'
+            +'<path d="M'+(hg.sx-2)+' '+(hp.y-4)+' L'+(hg.sx-2)+' '+(hp.y+4)+' L'+(hg.sx-10)+' '+hp.y+' Z" fill="'+hcol+'"/>';
+        } else if(hp.dir===0){
+          hs+='<line x1="'+(hg.sx+hg.SW-2)+'" y1="'+hp.y+'" x2="'+(hg.sx+hg.SW+10)+'" y2="'+hp.y+'" stroke="'+hcol+'" stroke-width="4" stroke-linecap="round"/>'
+            +'<path d="M'+(hg.sx+hg.SW+2)+' '+(hp.y-4)+' L'+(hg.sx+hg.SW+2)+' '+(hp.y+4)+' L'+(hg.sx+hg.SW+10)+' '+hp.y+' Z" fill="'+hcol+'"/>';
+        } else {
+          hs+='<line x1="'+hp.x+'" y1="'+(hg.h-2)+'" x2="'+hp.x+'" y2="'+(hg.h+10)+'" stroke="'+hcol+'" stroke-width="4" stroke-linecap="round"/>'
+            +'<path d="M'+(hp.x-4)+' '+(hg.h+2)+' L'+(hp.x+4)+' '+(hg.h+2)+' L'+hp.x+' '+(hg.h+10)+' Z" fill="'+hcol+'"/>';
+        }
+      }
+      hs+='<line x1="10" y1="'+(hg.BH/2)+'" x2="'+(hg.w-10)+'" y2="'+(hg.BH/2)+'" stroke="'+st+'" stroke-width="1.5" stroke-dasharray="5 4" opacity=".55"/>';
+      hs+='<circle cx="'+hg.cx+'" cy="'+Math.round(hg.BH/2)+'" r="13" fill="'+c.bg+'" stroke="'+st+'" stroke-width="1.5"/>'
+        +'<text x="'+hg.cx+'" y="'+(Math.round(hg.BH/2)+4)+'" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="'+c.text+'">ГС</text>';
+      return hs;}
+    case 'pump': return ''
+      +'<line x1="0" y1="'+cy+'" x2="'+(cx-14)+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<line x1="'+(cx+14)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="15" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M'+(cx-8)+' '+(cy-9)+' L'+(cx+10)+' '+cy+' L'+(cx-8)+' '+(cy+9)+' Z" fill="'+c.accent+'"/>';
+    case 'check':{
+      var x1=w*0.23,x2=w*0.75,xt=w*0.72; return ''
+      +'<line x1="0" y1="'+cy+'" x2="'+x1+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<line x1="'+x2+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<path d="M'+x1+' '+(h*0.19)+' L'+x1+' '+(h*0.81)+' L'+xt+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      +'<line x1="'+x2+'" y1="'+(h*0.22)+'" x2="'+x2+'" y2="'+(h*0.78)+'" stroke="'+st+'" stroke-width="3" stroke-linecap="round"/>';}
+    case 'valve': return valveBase(w,h,cy,c,false);
+    case 'union': return valveBase(w,h,cy,c,true);
+    case 'shutoff': return valveBase(w,h,cy,c,false);
+    case 'tvalve': return valveBase(w,h,cy,c,false)
+      +'<line x1="'+cx+'" y1="'+(h*0.19)+'" x2="'+cx+'" y2="6" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<circle cx="'+cx+'" cy="'+Math.max(4,h*0.10)+'" r="6" fill="'+c.accent+'" opacity=".9"/>';
+    case 'thead': return ''
+      +'<rect x="4" y="8" width="'+(w-8)+'" height="'+(h-16)+'" rx="'+((w-8)/2)+'" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<line x1="8" y1="'+(h*0.38)+'" x2="'+(w-8)+'" y2="'+(h*0.38)+'" stroke="'+st+'" stroke-width="1.5" opacity=".5"/>'
+      +'<line x1="8" y1="'+(h*0.55)+'" x2="'+(w-8)+'" y2="'+(h*0.55)+'" stroke="'+st+'" stroke-width="1.5" opacity=".5"/>'
+      +'<line x1="'+cx+'" y1="8" x2="'+cx+'" y2="2" stroke="'+st+'" stroke-width="2.5"/>';
+    case 'tee3': return ''
+      +'<line x1="2" y1="'+cy+'" x2="'+(w-2)+'" y2="'+cy+'" stroke="'+st+'" stroke-width="6" stroke-linecap="round"/>'
+      +'<path d="M'+(cx-11)+' '+(cy-9)+' L'+(cx-11)+' '+(cy+9)+' L'+cx+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>'
+      +'<path d="M'+(cx+11)+' '+(cy-9)+' L'+(cx+11)+' '+(cy+9)+' L'+cx+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>'
+      +'<line x1="'+cx+'" y1="'+(cy+9)+'" x2="'+cx+'" y2="'+(h-3)+'" stroke="'+st+'" stroke-width="6" stroke-linecap="round"/>'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="3.5" fill="'+c.accent+'"/>';
+    case 'cross': return ''
+      +'<line x1="2" y1="'+cy+'" x2="'+(w-2)+'" y2="'+cy+'" stroke="'+st+'" stroke-width="6" stroke-linecap="round"/>'
+      +'<line x1="'+cx+'" y1="2" x2="'+cx+'" y2="'+(h-2)+'" stroke="'+st+'" stroke-width="6" stroke-linecap="round"/>'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="'+c.accent+'"/>';
+    case 'balancing':{
+      var bx1=w*0.16,bx2=w*0.46,bx3=w*0.54,bx4=w*0.5; return ''
+      +'<line x1="0" y1="'+cy+'" x2="'+bx1+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<line x1="'+(w-bx1)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<path d="M'+bx1+' '+(h*0.19)+' L'+bx1+' '+(h*0.81)+' L'+bx2+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      +'<path d="M'+(w-bx1)+' '+(h*0.19)+' L'+(w-bx1)+' '+(h*0.81)+' L'+bx3+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      +'<line x1="'+bx4+'" y1="'+(cy-h*0.17)+'" x2="'+bx4+'" y2="'+(h*0.19)+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<circle cx="'+bx4+'" cy="'+(h*0.14)+'" r="4" fill="'+c.accent+'"/>'
+      +'<line x1="'+(bx4-w*0.125)+'" y1="'+(h*0.14)+'" x2="'+(bx4+w*0.125)+'" y2="'+(h*0.14)+'" stroke="'+st+'" stroke-width="2.5" stroke-linecap="round"/>';}
+    case 'tee':{
+      var ty2=teeY(h); return ''
+      +'<line x1="2" y1="'+ty2+'" x2="'+(w-2)+'" y2="'+ty2+'" stroke="'+st+'" stroke-width="6.5" stroke-linecap="round"/>'
+      +'<line x1="'+cx+'" y1="'+ty2+'" x2="'+cx+'" y2="'+(h-3)+'" stroke="'+st+'" stroke-width="6.5" stroke-linecap="round"/>'
+      +'<circle cx="'+cx+'" cy="'+ty2+'" r="4.5" fill="'+c.accent+'"/>';}
+    case 'elbow': return ''
+      +'<path d="M1 '+teeY(h)+' H'+(w/2)+' V'+(h-2)+'" fill="none" stroke="'+st+'" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>'
+      +'<circle cx="'+(w/2)+'" cy="'+teeY(h)+'" r="4" fill="'+c.accent+'"/>';
+    case 'radiator':{
+      var r=''
+        +'<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="7" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>';
+      for(var x=16;x<w-10;x+=13)
+        r+='<line x1="'+x+'" y1="10" x2="'+x+'" y2="'+(h-10)+'" stroke="'+st+'" stroke-width="2" opacity="0.5"/>';
+      r+='<line x1="6" y1="'+cy+'" x2="'+(w-6)+'" y2="'+cy+'" stroke="'+c.supply+'" stroke-width="3" opacity=".75"/>'
+        +'<line x1="18" y1="'+(h-2)+'" x2="18" y2="'+(h+8)+'" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+        +'<circle cx="18" cy="'+(h-2)+'" r="3" fill="'+c.supply+'"/>'
+        +'<line x1="'+(w-18)+'" y1="'+(h-2)+'" x2="'+(w-18)+'" y2="'+(h+8)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+        +'<circle cx="'+(w-18)+'" cy="'+(h-2)+'" r="3" fill="'+c.ret+'"/>';
+      return r;}
+    case 'airvent': return ''
+      +'<line x1="'+cx+'" y1="'+h+'" x2="'+cx+'" y2="26" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<rect x="5" y="15" width="'+(w-10)+'" height="13" rx="3" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M7 15 A8 8 0 0 1 '+(w-7)+' 15" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<circle cx="'+cx+'" cy="7" r="3" fill="'+c.accent+'"/>'
+      +'<line x1="'+cx+'" y1="4" x2="'+cx+'" y2="1" stroke="'+st+'" stroke-width="2" stroke-linecap="round"/>';
+    case 'boiler': case 'boilerTT': case 'boilerEl':{
+      var bpre=''
+      +'<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="8" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>';
+      if(item.type==='boilerEl'){
+        bpre+='<path d="M'+(cx+3)+' '+(h*0.24)+' L'+(cx-8)+' '+(h*0.5)+' L'+(cx+1)+' '+(h*0.5)+' L'+(cx-3)+' '+(h*0.74)+' L'+(cx+10)+' '+(h*0.44)+' L'+(cx+1)+' '+(h*0.44)+' Z" fill="'+c.accent+'" opacity=".9"/>';
+      } else if(item.type==='boilerTT'){
+        bpre+='<path d="M'+cx+' '+(h*0.28)+' Q'+(cx+16)+' '+(h*0.46)+' '+cx+' '+(h*0.62)+' Q'+(cx-16)+' '+(h*0.46)+' '+cx+' '+(h*0.28)+' Z" fill="'+c.accent+'" opacity=".85"/>'
+        +'<rect x="'+(w*0.2)+'" y="'+(h*0.68)+'" width="'+(w*0.6)+'" height="'+(h*0.16)+'" rx="3" fill="'+c.bg+'" stroke="'+st+'" stroke-width="1.5"/>'
+        +'<line x1="'+(w*0.28)+'" y1="'+(h*0.68)+'" x2="'+(w*0.28)+'" y2="'+(h*0.84)+'" stroke="'+st+'" stroke-width="1.5" opacity=".6"/>'
+        +'<line x1="'+(w*0.5)+'" y1="'+(h*0.68)+'" x2="'+(w*0.5)+'" y2="'+(h*0.84)+'" stroke="'+st+'" stroke-width="1.5" opacity=".6"/>'
+        +'<line x1="'+(w*0.72)+'" y1="'+(h*0.68)+'" x2="'+(w*0.72)+'" y2="'+(h*0.84)+'" stroke="'+st+'" stroke-width="1.5" opacity=".6"/>';
+      } else {
+        bpre+='<path d="M'+cx+' '+(h*0.28)+' Q'+(cx+16)+' '+(h*0.46)+' '+cx+' '+(h*0.62)+' Q'+(cx-16)+' '+(h*0.46)+' '+cx+' '+(h*0.28)+' Z" fill="'+c.accent+'" opacity=".85"/>'
+        +'<rect x="'+(w*0.22)+'" y="'+(h*0.7)+'" width="'+(w*0.56)+'" height="10" rx="3" fill="'+c.bg+'" stroke="'+st+'" stroke-width="1.5"/>';
+      }
+      bpre+='<line x1="18" y1="'+(h-2)+'" x2="18" y2="'+(h+10)+'" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<path d="M14 '+(h+2)+' L22 '+(h+2)+' L18 '+(h+10)+' Z" fill="'+c.supply+'"/>'
+      +'<line x1="'+(w-18)+'" y1="'+(h-2)+'" x2="'+(w-18)+'" y2="'+(h+10)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<path d="M'+(w-22)+' '+(h+2)+' L'+(w-14)+' '+(h+2)+' L'+(w-18)+' '+(h+10)+' Z" fill="'+c.ret+'"/>';
+      return bpre;}
+    case 'dhwDirect': return ''
+      +'<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="'+(w/2)+'" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M14 '+(h*0.3)+' h'+(w-28)+' v'+(h*0.34)+' h-'+(w-28)+' Z" fill="none" stroke="'+st+'" stroke-width="1.5" stroke-dasharray="5 4" opacity=".55"/>'
+      +'<path d="M'+(w/2-10)+' '+(h*0.78)+' h6 l-4 -8 h8 l-4 8 h6" fill="none" stroke="'+c.accent+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+      +'<text x="'+cx+'" y="'+(h*0.22)+'" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="'+c.text+'">ГВС</text>'
+      +'<line x1="2" y1="'+(h-26)+'" x2="-10" y2="'+(h-26)+'" stroke="'+c.ret+'" stroke-width="3.5" stroke-linecap="round"/>'
+      +'<line x1="'+(w-2)+'" y1="'+(h-26)+'" x2="'+(w+10)+'" y2="'+(h-26)+'" stroke="'+c.supply+'" stroke-width="3.5" stroke-linecap="round"/>';
+    case 'dhw':{
+      var d=''
+        +'<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="'+(w/2)+'" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>';
+      d+='<path d="M18 '+(h-18)+' Q'+(w/2)+' '+(h-52)+' '+(w-18)+' '+(h-18)+'" fill="none" stroke="'+c.supply+'" stroke-width="3" opacity=".8"/>';
+      d+='<line x1="10" y1="34" x2="'+(w-10)+'" y2="34" stroke="'+st+'" stroke-width="1.5" stroke-dasharray="5 4" opacity=".5"/>';
+      d+='<text x="'+cx+'" y="26" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="'+c.text+'">ГВС</text>';
+      d+='<line x1="18" y1="'+(h-2)+'" x2="18" y2="'+(h+10)+'" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+        +'<line x1="'+(w-18)+'" y1="'+(h-2)+'" x2="'+(w-18)+'" y2="'+(h+10)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+        +'<line x1="2" y1="22" x2="-10" y2="22" stroke="'+c.ret+'" stroke-width="3.5" stroke-linecap="round"/>'
+        +'<line x1="'+(w-2)+'" y1="22" x2="'+(w+10)+'" y2="22" stroke="'+c.supply+'" stroke-width="3.5" stroke-linecap="round"/>';
+      return d;}
+    case 'extank': return ''
+      +'<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="14" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M6 '+Math.round(h*0.45)+' Q'+cx+' '+(h*0.28)+' '+(w-6)+' '+Math.round(h*0.45)+'" fill="none" stroke="'+st+'" stroke-width="1.5" stroke-dasharray="4 3" opacity=".6"/>'
+      +'<line x1="'+cx+'" y1="'+(h-2)+'" x2="'+cx+'" y2="'+(h+10)+'" stroke="'+st+'" stroke-width="4" stroke-linecap="round"/>';
+    case 'sgboiler': case 'sgdhw':{
+      var scol=(item.type==='sgboiler')?c.supply:c.accent;
+      return ''
+      +'<line x1="'+cx+'" y1="'+h+'" x2="'+cx+'" y2="30" stroke="'+st+'" stroke-width="5" stroke-linecap="round"/>'
+      +'<circle cx="'+cx+'" cy="16" r="11" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<circle cx="'+cx+'" cy="16" r="3.5" fill="'+c.accent+'"/>'
+      +'<line x1="'+cx+'" y1="6" x2="'+cx+'" y2="2" stroke="'+c.accent+'" stroke-width="2" stroke-linecap="round"/>'
+      +'<path d="M'+(cx-14)+' '+(h*0.45)+' h28 l-14 18 Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>'
+      +'<circle cx="'+(cx+22)+'" cy="'+(h*0.55)+'" r="8" fill="'+c.bg+'" stroke="'+st+'" stroke-width="2"/>'
+      +'<line x1="'+(cx+22)+'" y1="'+(h*0.55)+'" x2="'+(cx+26)+'" y2="'+(h*0.50)+'" stroke="'+scol+'" stroke-width="2"/>';}
+    case 'pumpgrp': return ''
+      +'<line x1="0" y1="'+cy+'" x2="'+(w*0.14)+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.86)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<rect x="'+(w*0.1)+'" y="'+(cy-h*0.22)+'" width="'+(w*0.16)+'" height="'+(h*0.44)+'" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<rect x="'+(w*0.74)+'" y="'+(cy-h*0.22)+'" width="'+(w*0.16)+'" height="'+(h*0.44)+'" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="14" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M'+(cx-7)+' '+(cy-8)+' L'+(cx+9)+' '+cy+' L'+(cx-7)+' '+(cy+8)+' Z" fill="'+c.accent+'"/>'
+      +'<path d="M'+(w*0.42)+' '+(cy-h*0.16)+' l'+(w*0.1)+' '+(h*0.16)+' l-'+(w*0.1)+' '+(h*0.16)+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>';
+    case 'pumpmix': return ''
+      +'<line x1="0" y1="20" x2="'+(w*0.1)+'" y2="20" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.9)+'" y1="20" x2="'+w+'" y2="20" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<line x1="0" y1="'+(h-20)+'" x2="'+(w*0.1)+'" y2="'+(h-20)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.9)+'" y1="'+(h-20)+'" x2="'+w+'" y2="'+(h-20)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<rect x="'+(w*0.08)+'" y="6" width="'+(w*0.16)+'" height="28" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<rect x="'+(w*0.76)+'" y="6" width="'+(w*0.16)+'" height="28" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<rect x="'+(w*0.76)+'" y="'+(h-34)+'" width="'+(w*0.16)+'" height="28" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<rect x="'+(w*0.08)+'" y="'+(h-34)+'" width="'+(w*0.16)+'" height="28" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="13" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M'+(cx-6)+' '+(cy-7)+' L'+(cx+8)+' '+cy+' L'+(cx-6)+' '+(cy+7)+' Z" fill="'+c.accent+'"/>'
+      +'<path d="M'+(w*0.34)+' '+(cy-16)+' h22 l-11 16 Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>'
+      +'<line x1="'+(w*0.45)+'" y1="'+cy+'" x2="'+(w*0.52)+'" y2="'+(cy+14)+'" stroke="'+st+'" stroke-width="2.5"/>';
+    case 'label':{
+      var lt=item.name||'Подпись';
+      return '<rect x="0" y="0" width="'+w+'" height="'+h+'" rx="6" fill="'+c.chip+'" stroke="'+c.accent+'" stroke-width="2" stroke-dasharray="6 4"/>'
+       +'<text x="'+(w/2)+'" y="'+(h/2+4)+'" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="'+c.text+'">'+esc(lt)+'</text>';
+    }
+    case 'mancol':{
+      var mg=manGeom(item);
+      var m=''
+        +'<rect x="1.5" y="1.5" width="'+(mg.w-3)+'" height="'+mg.BH+'" rx="6" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+        +'<rect x="1.5" y="'+(mg.BH+mg.GAP)+'" width="'+(mg.w-3)+'" height="'+mg.BH+'" rx="6" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>';
+      var mi2;
+      for(mi2=0;mi2<mg.n;mi2++){
+        var mx2=mg.MG+mg.PITCH/2+mi2*mg.PITCH;
+        m+='<line x1="'+mx2+'" y1="'+mg.BH+'" x2="'+mx2+'" y2="'+(mg.BH+mg.GAP)+'" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+          +'<path d="M'+(mx2-4)+' '+(mg.BH+mg.GAP-10)+' L'+(mx2+4)+' '+(mg.BH+mg.GAP-10)+' L'+mx2+' '+(mg.BH+mg.GAP-2)+' Z" fill="'+c.supply+'"/>'
+          +'<line x1="'+(mx2+14)+'" y1="'+(mg.BH+mg.GAP)+'" x2="'+(mx2+14)+'" y2="'+mg.h+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+          +'<path d="M'+(mx2+10)+' '+(mg.h-10)+' L'+(mx2+18)+' '+(mg.h-10)+' L'+(mx2+14)+' '+(mg.h-2)+' Z" fill="'+c.ret+'"/>';
+      }
+      m+='<line x1="2" y1="'+(mg.BH/2)+'" x2="-10" y2="'+(mg.BH/2)+'" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+        +'<path d="M-2 '+(mg.BH/2-4)+' L-2 '+(mg.BH/2+4)+' L-10 '+(mg.BH/2)+' Z" fill="'+c.supply+'"/>'
+        +'<line x1="2" y1="'+(mg.BH+mg.GAP+mg.BH/2)+'" x2="-10" y2="'+(mg.BH+mg.GAP+mg.BH/2)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+        +'<path d="M-2 '+(mg.BH+mg.GAP+mg.BH/2-4)+' L-2 '+(mg.BH+mg.GAP+mg.BH/2+4)+' L-10 '+(mg.BH+mg.GAP+mg.BH/2)+' Z" fill="'+c.ret+'"/>'
+        +'<text x="'+(mg.w-8)+'" y="'+(mg.BH-8)+'" text-anchor="end" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="'+c.supply+'">П</text>'
+        +'<text x="'+(mg.w-8)+'" y="'+(mg.BH+mg.GAP+mg.BH-8)+'" text-anchor="end" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="'+c.ret+'">О</text>';
+      return m;}
+    case 'mixunit': return ''
+      +'<line x1="0" y1="22" x2="'+(w*0.12)+'" y2="22" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.88)+'" y1="22" x2="'+w+'" y2="22" stroke="'+c.supply+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<line x1="0" y1="'+(h-22)+'" x2="'+(w*0.12)+'" y2="'+(h-22)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.88)+'" y1="'+(h-22)+'" x2="'+w+'" y2="'+(h-22)+'" stroke="'+c.ret+'" stroke-width="4" stroke-linecap="round"/>'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="15" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M'+(cx-7)+' '+(cy-9)+' L'+(cx+10)+' '+cy+' L'+(cx-7)+' '+(cy+9)+' Z" fill="'+c.accent+'"/>'
+      +'<path d="M'+(w*0.22)+' '+(cy-18)+' h24 l-12 18 Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>'
+      +'<line x1="'+(w*0.34)+'" y1="'+(cy-2)+'" x2="'+(w*0.4)+'" y2="'+(cy+14)+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<path d="M'+(w*0.62)+' '+(cy+16)+' l10 -6 l-2 12 Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-linejoin="round"/>';
+    case 'bushing': return ''
+      +'<line x1="0" y1="'+cy+'" x2="'+(w*0.22)+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.78)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<path d="M'+(w*0.22)+' '+(h*0.12)+' h'+(w*0.56)+' l-'+(w*0.12)+' '+cy+' l'+(w*0.12)+' '+(h*0.76)+' h-'+(w*0.56)+' l'+(w*0.12)+' -'+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      +'<line x1="'+(w*0.38)+'" y1="'+(h*0.2)+'" x2="'+(w*0.38)+'" y2="'+(h*0.8)+'" stroke="'+st+'" stroke-width="1.5" opacity=".5"/>';
+    case 'mcoupling': return ''
+      +'<line x1="0" y1="'+cy+'" x2="'+(w*0.16)+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<line x1="'+(w*0.84)+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+      +'<rect x="'+(w*0.16)+'" y="'+(h*0.1)+'" width="'+(w*0.68)+'" height="'+(h*0.8)+'" rx="3" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<line x1="'+(w*0.34)+'" y1="'+(h*0.18)+'" x2="'+(w*0.34)+'" y2="'+(h*0.82)+'" stroke="'+st+'" stroke-width="1.5" opacity=".5"/>'
+      +'<line x1="'+(w*0.66)+'" y1="'+(h*0.18)+'" x2="'+(w*0.66)+'" y2="'+(h*0.82)+'" stroke="'+st+'" stroke-width="1.5" opacity=".5"/>';
+    case 'ufc':{
+      var ugS=ufcGeom(item), sp=ufcSpiral(ugS);
+      var u=''
+        +'<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="8" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2" stroke-dasharray="6 4" opacity=".9"/>'
+        +'<polyline points="'+ptsStr(sp.sup)+'" fill="none" stroke="'+c.supply+'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'
+        +'<polyline points="'+ptsStr(sp.ret)+'" fill="none" stroke="'+c.ret+'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      var sa=sp.sup[0], ra=sp.ret[0];
+      u+='<line x1="'+sa.x+'" y1="'+sa.y+'" x2="'+sa.x+'" y2="'+h+'" stroke="'+c.supply+'" stroke-width="3.2" stroke-linecap="round"/>'
+        +'<line x1="'+ra.x+'" y1="'+ra.y+'" x2="'+ra.x+'" y2="'+h+'" stroke="'+c.ret+'" stroke-width="3.2" stroke-linecap="round"/>';
+      var si=sp.sup[sp.sup.length-1], ri=sp.ret[sp.ret.length-1];
+      u+='<line x1="'+si.x+'" y1="'+si.y+'" x2="'+ri.x+'" y2="'+ri.y+'" stroke="'+st+'" stroke-width="2" stroke-dasharray="3 3" opacity=".6"/>';
+      u+='<text x="'+(w-8)+'" y="16" text-anchor="end" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="'+c.muted+'">PEX Ø'+specDn(item.spec)+' · '+ugS.len+' м</text>';
+      return u;}
+  }
+  return '';
+}
+function valveBase(w,h,cy,c,withNut){
+  var st=c.stroke,s='';
+  var vx1=w*0.18,vx2=w-vx1,vb1=w*0.48,vb2=w*0.52,stem=w*0.5;
+  var kn=h*0.2;
+  s+='<line x1="0" y1="'+cy+'" x2="'+vx1+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+    +'<line x1="'+vx2+'" y1="'+cy+'" x2="'+w+'" y2="'+cy+'" stroke="'+st+'" stroke-width="4.5" stroke-linecap="round"/>'
+    +'<path d="M'+vx1+' '+(h*0.2)+' L'+vx1+' '+(h*0.8)+' L'+vb1+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5" stroke-linejoin="round"/>'
+    +'<path d="M'+vx2+' '+(h*0.2)+' L'+vx2+' '+(h*0.8)+' L'+vb2+' '+cy+' Z" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5" stroke-linejoin="round"/>'
+    +'<line x1="'+stem+'" y1="'+cy+'" x2="'+stem+'" y2="'+(h*0.24)+'" stroke="'+st+'" stroke-width="2.5"/>'
+    +'<rect x="'+(w*0.36)+'" y="'+(h*0.06)+'" width="'+(w*0.3)+'" height="'+kn+'" rx="'+(kn/2)+'" fill="'+c.accent+'"/>';
+  if(withNut){
+    var nw=w*0.16,nh=h*0.52;
+    s+='<rect x="0" y="'+(cy-nh/2)+'" width="'+nw+'" height="'+nh+'" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>'
+      +'<rect x="'+(w-nw)+'" y="'+(cy-nh/2)+'" width="'+nw+'" height="'+nh+'" rx="2.5" fill="'+c.fill+'" stroke="'+st+'" stroke-width="2.5"/>';
+  }
+  return s;
+}
+
+/* ---------- scene render ---------- */
+function defsMarkup(c){
+  return '<pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">'
+   +'<path d="M100 0H0V100" fill="none" stroke="'+c.grid+'" stroke-width="1"/>'
+   +'<path d="M20 0V20H0M40 0V20M60 0V20M80 0V20M0 40H20M0 60H20M0 80H20M20 100V80M40 100V80M60 100V80M80 100V80M100 40H80M100 60H80M100 80H80" fill="none" stroke="'+c.grid+'" stroke-width="0.6" opacity=".7"/>'
+   +'</pattern>';
+}
+function pipeShape(p,pts,c,interactive){
+  var col=p.medium==='ret'?c.ret:c.supply;
+  var dash=p.medium==='ret'?' stroke-dasharray="11 7"':'';
+  var sel=(state.sel&&state.sel.kind==='pipe'&&state.sel.id===p.id&&interactive);
+  var lx=pts[0].x, ly=pts[0].y, best=-1;
+  for(var si=1;si<pts.length;si++){
+    var seg=Math.hypot(pts[si].x-pts[si-1].x, pts[si].y-pts[si-1].y);
+    if(seg>best){ best=seg; lx=(pts[si].x+pts[si-1].x)/2; ly=(pts[si].y+pts[si-1].y)/2; }
+  }
+  var g='<g data-pipe="'+p.id+'">';
+  if(interactive) g+='<polyline points="'+ptsStr(pts)+'" fill="none" stroke="transparent" stroke-width="16" stroke-linejoin="round" style="cursor:pointer"/>';
+  if(sel) g+='<polyline points="'+ptsStr(pts)+'" fill="none" stroke="'+c.accent+'" stroke-width="12" opacity=".28" stroke-linejoin="round"'+dash+'/>';
+  g+='<polyline points="'+ptsStr(pts)+'" fill="none" stroke="'+col+'" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"'+dash+'/>';
+  var br=p.branch?branchById(p.branch):null;
+  if(br) g+='<polyline points="'+ptsStr(pts)+'" fill="none" stroke="'+br.color+'" stroke-width="2" stroke-dasharray="3 7" stroke-linejoin="round" opacity=".95"/>';
+  g+='<circle cx="'+pts[0].x+'" cy="'+pts[0].y+'" r="3.2" fill="'+col+'"/>'
+    +'<circle cx="'+pts[pts.length-1].x+'" cy="'+pts[pts.length-1].y+'" r="3.2" fill="'+col+'"/>';
+  var lb=(p.material==='pex'?'PEX Ø':'Ø')+String(p.diameter).replace('Ø','');
+  g+='<g transform="translate('+lx+','+ly+')">'
+    +'<rect x="-20" y="-24" width="40" height="15" rx="7" fill="'+c.chip+'" stroke="'+c.grid+'"/>'
+    +'<text x="0" y="-13" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="'+c.muted+'">'+esc(lb)+'</text></g>';
+  g+='</g>';
+  return g;
+}
+function ptsStr(pts){return pts.map(function(p){return p.x+','+p.y}).join(' ')}
+function unmirrorTexts(mk,item){
+  if(item.type==='label') return mk;
+  var sx=item.fx?-1:1, sy=item.fy?-1:1;
+  if(sx===1&&sy===1) return mk;
+  return mk.replace(/<text([^>]*)>([\s\S]*?)<\/text>/g,function(all,attrs,inner){
+    var xm=/\sx="(-?[\d.]+)"/.exec(attrs), ym=/\sy="(-?[\d.]+)"/.exec(attrs);
+    var tx=xm?parseFloat(xm[1]):0, ty=ym?parseFloat(ym[1]):0;
+    var t='';
+    if(sx<0) t+='translate('+(2*tx)+',0) scale(-1,1)';
+    if(sy<0) t+=(t?' ':'')+'translate(0,'+(2*ty)+') scale(1,-1)';
+    return '<text transform="'+t+'"'+attrs+'>'+inner+'</text>';
+  });
+}
+
+function itemShape(item,c,interactive){
+  var sel=(state.sel&&state.sel.kind==='item'&&state.sel.id===item.id&&interactive);
+  var ing=inGroup(item.id)&&interactive;
+  var g='<g data-item="'+item.id+'" transform="translate('+item.x+','+item.y+')">';
+  var flip='';
+  if(item.type!=='label'){
+    if(item.fx) flip+=' translate('+item.w+',0) scale(-1,1)';
+    if(item.fy) flip+=' translate(0,'+item.h+') scale(1,-1)';
+  }
+  g+='<g transform="rotate('+(item.angle||0)+','+(item.w/2)+','+(item.h/2)+')'+flip+'">';
+  if(sel) g+='<rect x="-7" y="-7" width="'+(item.w+14)+'" height="'+(item.h+14)+'" rx="12" fill="none" stroke="'+c.accent+'" stroke-width="2" stroke-dasharray="7 5" opacity=".9"/>';
+  else if(ing) g+='<rect x="-5" y="-5" width="'+(item.w+10)+'" height="'+(item.h+10)+'" rx="10" fill="'+c.accent+'" fill-opacity=".08" stroke="'+c.accent+'" stroke-width="1.5" stroke-dasharray="5 4" opacity=".85"/>';
+  g+=unmirrorTexts(symbolMarkup(item,c),item);
+  if(interactive&&item.type!=='label'){
+    var ports=getPorts(item);
+    for(var i=0;i<ports.length;i++){
+      var pt=ports[i];
+      g+='<circle class="port" data-item="'+item.id+'" data-port="'+pt.id+'" cx="'+pt.x+'" cy="'+pt.y+'" r="5.5" fill="'+c.chip+'" stroke="'+c.accent+'" stroke-width="2" style="cursor:crosshair"><title>'+esc(pt.label||'')+'</title></circle>';
+    }
+  }
+  g+='</g>';
+  if(sel&&interactive&&item.type!=='pipe'){
+    var hnd=[['nw',0,0,'nwse-resize'],['ne',item.w,0,'nesw-resize'],['sw',0,item.h,'nesw-resize'],['se',item.w,item.h,'nwse-resize']];
+    for(var q=0;q<4;q++){
+      g+='<rect class="rhandle" data-item="'+item.id+'" data-corner="'+hnd[q][0]+'" x="'+(hnd[q][1]-6)+'" y="'+(hnd[q][2]-6)+'" width="12" height="12" rx="3" fill="'+c.accent+'" stroke="'+c.bg+'" stroke-width="1.5" style="cursor:'+hnd[q][3]+'"/>';
+    }
+  }
+  if(item.type!=='label'&&item.name){
+    var nw=Math.max(item.w, item.name.length*7+16);
+    g+='<g transform="translate('+((item.w-nw)/2)+','+(item.h+8)+')">'
+      +'<rect x="0" y="0" width="'+nw+'" height="22" rx="5" fill="'+c.chip+'" stroke="'+c.grid+'" stroke-width="1"/>'
+      +'<text x="'+(nw/2)+'" y="15" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="'+c.text+'">'+esc(item.name)+'</text></g>';
+  }
+  var ibr=item.branch?branchById(item.branch):null;
+  if(ibr){
+    g+='<g transform="translate(-8,-8)"><rect x="0" y="0" width="11" height="11" rx="3" fill="'+ibr.color+'"/>'
+      +'<title>Ветка: '+esc(ibr.name)+'</title></g>';
+  }
+  g+='</g>';
+  return g;
+}
+function sceneMarkup(c,interactive){
+  var s='',i;
+  if(state.bg&&state.bg.url){
+    var bg=state.bg;
+    s+='<g opacity="'+(bg.opacity!=null?bg.opacity:0.5)+'" style="pointer-events:none">'
+      +'<image href="'+esc(bg.url)+'" x="'+bg.x+'" y="'+bg.y+'" width="'+bg.w+'" height="'+bg.h+'" preserveAspectRatio="none"/></g>';
+  }
+  for(i=0;i<state.pipes.length;i++){
+    var pts=pipePoints(state.pipes[i]);
+    if(pts&&pts.length>1) s+=pipeShape(state.pipes[i],pts,c,interactive);
+  }
+  for(i=0;i<state.items.length;i++) s+=itemShape(state.items[i],c,interactive);
+  return s;
+}
+
+var svg=$('#canvas'), scene=$('#scene'), overlay=$('#overlay'), defs=$('#defs');
+function render(){
+  var c=themeColors(false);
+  defs.innerHTML=defsMarkup(c);
+  scene.innerHTML=sceneMarkup(c,true);
+  renderProps(); renderStatus(); updateZoom();
+}
+function renderScene(){
+  var c=themeColors(false);
+  defs.innerHTML=defsMarkup(c);
+  scene.innerHTML=sceneMarkup(c,true);
+  renderStatus(); updateZoom();
+}
+
+/* ---------- view ---------- */
+function applyView(){
+  svg.setAttribute('viewBox',view.x+' '+view.y+' '+view.w+' '+view.h);
+  updateZoom();
+}
+function updateZoom(){
+  var z=Math.round(1200/view.w*100);
+  $('#zoomVal').textContent=z+'%';
+}
+function screenToWorld(e){
+  var r=svg.getBoundingClientRect();
+  return {x:view.x+(e.clientX-r.left)*(view.w/r.width), y:view.y+(e.clientY-r.top)*(view.h/r.height)};
+}
+function zoomAt(f,cx,cy){
+  var nw=Math.min(5200,Math.max(240,view.w/f));
+  var k=nw/view.w;
+  view.x=cx-(cx-view.x)*k; view.y=cy-(cy-view.y)*k;
+  view.w=nw; view.h=view.h*k;
+  applyView();
+}
+function contentBBox(){
+  if(!state.items.length&&!state.pipes.length) return {x:0,y:0,w:1200,h:760};
+  var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  function ext(x,y){if(x<x0)x0=x;if(y<y0)y0=y;if(x>x1)x1=x;if(y>y1)y1=y}
+  state.items.forEach(function(it){
+    if(it.type==='pipe'){ ext(Math.min(it.ax,it.bx),Math.min(it.ay,it.by)); ext(Math.max(it.ax,it.bx),Math.max(it.ay,it.by)); return; }
+    var a=(it.angle||0);
+    var pts=[[0,0],[it.w,0],[0,it.h],[it.w,it.h]];
+    var rad=a*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);
+    var cx=it.w/2,cy=it.h/2;
+    pts.forEach(function(p){
+      var lx=p[0]-cx,ly=p[1]-cy;
+      ext(it.x+cx+lx*cos-ly*sin, it.y+cy+lx*sin+ly*cos);
+    });
+  });
+  state.pipes.forEach(function(p){ var pts=pipePoints(p); if(pts) pts.forEach(function(q){ext(q.x,q.y)}); });
+  if(x0>x1) return {x:0,y:0,w:1200,h:760};
+  return {x:x0,y:y0,w:x1-x0,h:y1-y0};
+}
+function fitView(){
+  var b=contentBBox(), pad=70;
+  var r=svg.getBoundingClientRect();
+  var aspect=r.width/r.height||1.6;
+  var w=Math.max(b.w+pad*2,300), h=Math.max(b.h+pad*2,200);
+  if(w/h<aspect) w=h*aspect; else h=w/aspect;
+  view={x:b.x+b.w/2-w/2, y:b.y+b.h/2-h/2, w:w, h:h};
+  applyView();
+}
+
+/* ---------- interactions ---------- */
+function hideHint(){ var h=$('#toolChip'); if(h&&!state.tool) h.style.display='none'; }
+function armTool(t){
+  state.tool=(state.tool===t)?null:t;
+  document.querySelectorAll('.card').forEach(function(el){el.classList.toggle('on',el.dataset.type===state.tool)});
+  svg.classList.toggle('armed',!!state.tool);
+  var chip=$('#toolChip');
+  chip.style.display=state.tool?'':'none';
+  chip.textContent=state.tool
+   ? 'Инструмент: '+CAT[state.tool].name+((state.tool==='pipe'||state.tool==='pexp')?' — потяните линию на поле.':' — кликните на поле для установки. Esc — отмена.')
+   : 'Выберите компонент слева и кликните на поле. Тяните от точки соединения к точке — появится труба.';
+  renderStatus();
+}
+function commit(){ history.push(JSON.stringify({items:state.items,pipes:state.pipes})); if(history.length>60)history.shift(); future=[]; save(); }
+function undo(){
+  if(!history.length){toast('Нечего отменять');return}
+  future.push(JSON.stringify({items:state.items,pipes:state.pipes}));
+  var s=history.pop(); var o=JSON.parse(s); state.items=o.items; state.pipes=o.pipes; state.sel=null; save(); render(); toast('Действие отменено');
+}
+function redo(){
+  if(!future.length){toast('Нечего повторять');return}
+  history.push(JSON.stringify({items:state.items,pipes:state.pipes}));
+  var s=future.pop(); var o=JSON.parse(s); state.items=o.items; state.pipes=o.pipes; state.sel=null; save(); render(); toast('Действие повторено');
+}
+function save(){ try{localStorage.setItem(SAVE_KEY,JSON.stringify({items:state.items,pipes:state.pipes,name:state.name,bg:state.bg,branches:state.branches}))}catch(e){ if(String(e).indexOf('Quota')>=0) toast('Файл плана слишком большой — автосохранение без него'); } }
+function migrateProject(o){
+  o.items=(o.items||[]).filter(function(it){ return it.type!=='collector' && !!CAT[it.type]; });
+  o.items.forEach(function(it){
+    var cat=CAT[it.type]; if(!cat) return;
+    if(!it.spec||cat.specs.indexOf(it.spec)<0) it.spec=cat.specs[0];
+    if(it.type==='hydro'){
+      if(!(it.pairs>=1&&it.pairs<=7)) it.pairs=2;
+      delete it.hlay;
+    }
+    if(it.type==='mancol'){
+      if(!(it.circuits>=2&&it.circuits<=12)) it.circuits=6;
+      manCtab(it);
+    }
+    if(it.type==='ufc'){
+      if(!(it.clen>=20&&it.clen<=250)) it.clen=90;
+    }
+    if(POWER_TYPES[it.type]&&!itemPower(it)){
+      var dp=defaultPower(it);
+      if(dp) it.power=dp;
+    }
+    applyDims(it);
+  });
+  var byId={}; o.items.forEach(function(it){byId[it.id]=it});
+  function portIds(it){ var m={}; getPorts(it).forEach(function(q){m[q.id]=1}); return m; }
+  o.pipes=(o.pipes||[]).filter(function(p){
+    if(p.a){ var ia=byId[p.a.itemId]; if(!ia||!portIds(ia)[p.a.portId]) return false; }
+    if(p.b){ var ib=byId[p.b.itemId]; if(!ib||!portIds(ib)[p.b.portId]) return false; }
+    return true;
+  });
+  o.pipes.forEach(function(p){
+    p.material=(p.material==='pex')?'pex':'pp';
+    var dl=pipeDiameters(p.material);
+    if(dl.indexOf(String(p.diameter))<0) p.diameter=dl[1]||dl[0];
+    if(p.material==='pex'&&!p.sub) p.sub='PEX-AL-PEX';
+  });
+  o.name=(typeof o.name==='string'&&o.name)?o.name.slice(0,60):'Новый проект';
+  o.bg=(o.bg&&o.bg.url)?{url:o.bg.url,x:+o.bg.x||0,y:+o.bg.y||0,w:Math.max(100,+o.bg.w||1200),h:Math.max(100,+o.bg.h||800),opacity:(+o.bg.opacity>=0&&+o.bg.opacity<=1)?+o.bg.opacity:0.5}:null;
+  o.branches=(o.branches&&o.branches.length)?o.branches.filter(function(b){return b&&b.id&&b.name}).map(function(b,i){return {id:b.id,name:String(b.name).slice(0,40),color:b.color||BR_COLORS[i%BR_COLORS.length]}}):[];
+  o.diag=null;
+  return o;
+}
+function load(){ try{var s=localStorage.getItem(SAVE_KEY); if(!s) return false; var o=JSON.parse(s); if(!o||!o.items) return false;
+  o=migrateProject(o);
+  state.items=o.items; state.pipes=o.pipes; state.name=o.name; state.bg=o.bg; state.branches=o.branches; state.diag=null; return true;}catch(e){return false} }
+function applyProject(o){
+  o=migrateProject(o);
+  state.items=o.items; state.pipes=o.pipes; state.name=o.name; state.bg=o.bg; state.branches=o.branches; state.diag=null;
+  state.sel=null; groupClear(); history=[]; future=[];
+  var pn=$('#projName'); if(pn) pn.value=state.name;
+  save(); render(); fitView();
+}
+function projectJSON(){
+  return JSON.stringify({v:2,name:state.name,bg:state.bg,branches:state.branches,items:state.items,pipes:state.pipes});
+}
+function saveProjectFile(){
+  var blob=new Blob([projectJSON()],{type:'application/json;charset=utf-8'});
+  downloadBlob(blob,(state.name||'proekt').replace(/[\\/:*?"<>|]+/g,'_')+'_'+isoDate()+'.json');
+  toast('Проект сохранён в файл');
+}
+function openProjectFile(file){
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var o=JSON.parse(rd.result);
+      if(!o||!o.items||!o.pipes) throw new Error('bad');
+      commit();
+      applyProject(o);
+      toast('Проект загружен: '+state.name);
+    }catch(e){ toast('Не удалось открыть файл проекта'); }
+  };
+  rd.readAsText(file);
+}
+function importBgFile(file){
+  if(!/^image\//.test(file.type)){ toast('Нужен файл изображения (PNG/JPG)'); return; }
+  var rd=new FileReader();
+  rd.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var max=1600, k=Math.min(1,max/Math.max(img.width,img.height));
+      var cv=document.createElement('canvas');
+      cv.width=Math.max(1,Math.round(img.width*k)); cv.height=Math.max(1,Math.round(img.height*k));
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      var url=cv.toDataURL('image/jpeg',0.82);
+      commit();
+      var bw=1200, bh=Math.round(bw*cv.height/cv.width);
+      state.bg={url:url,x:Math.round(view.x+view.w/2-bw/2),y:Math.round(view.y+view.h/2-bh/2),w:bw,h:bh,opacity:0.5};
+      save(); render();
+      toast('План добавлен как подложка');
+    };
+    img.onerror=function(){ toast('Не удалось прочитать изображение'); };
+    img.src=rd.result;
+  };
+  rd.readAsDataURL(file);
+}
+
+function pipeMaterial(p){ return p&&p.material==='pex'?'pex':'pp'; }
+function pipeDiameters(mat){ return mat==='pex'?['16','20','25','32']:['20','25','32','40','50','63']; }
+function pipeDefaultD(mat){ return mat==='pex'?'20':'25'; }
+function pipeMatName(mat){ return mat==='pex'?'Труба PEX':'Труба ПП'; }
+var lastDropTs=0, justDraggedTs=0;
+function addItem(type,wx,wy){
+  var cat=CAT[type]; if(!cat||type==='pipe'||type==='pexp') return;
+  var now=Date.now();
+  if(now-lastDropTs<180) return;
+  lastDropTs=now;
+  commit();
+  var it={id:uid(),type:type,x:0,y:0,w:cat.w,h:cat.h,angle:0,spec:cat.specs[0],name:type==='label'?'Подпись':'',notes:''};
+  if(type==='ufc') it.clen=90;
+  if(type==='mancol') manCtab(it);
+  if(POWER_TYPES[type]){ var dpp=defaultPower(it); if(dpp) it.power=dpp; }
+  applyDims(it);
+  var pos=magneticSnap(it,snap(wx-it.w/2),snap(wy-it.h/2));
+  it.x=pos.x; it.y=pos.y;
+  state.items.push(it);
+  state.sel={kind:'item',id:it.id};
+  render(); hideHint(); toast(cat.name+' добавлен(о) на схему');
+}
+function startLink(itemId,portId,e){
+  var it=itemById(itemId); var p=absPort(it,portId); if(!p) return;
+  link={itemId:itemId,portId:portId,x:p.x,y:p.y,tx:p.x,ty:p.y,dir:p.dir};
+  if(e){ try{ svg.setPointerCapture(e.pointerId); }catch(err){} }
+  scene.querySelectorAll('.port').forEach(function(el){
+    if(!(el.dataset.item===itemId&&el.dataset.port===portId)) el.setAttribute('stroke-width','3.5');
+  });
+}
+function completeLink(itemId,portId){
+  if(!link) return false;
+  if(itemId===link.itemId&&portId===link.portId){ cancelLink(); render(); return true; }
+  var src={itemId:link.itemId,portId:link.portId};
+  var pa=itemById(src.itemId), pb=itemById(itemId);
+  if(!pa||!pb){cancelLink();render();return true}
+  var dup=state.pipes.some(function(p){
+    return p.a&&p.b&&((p.a.itemId===src.itemId&&p.a.portId===src.portId&&p.b.itemId===itemId&&p.b.portId===portId)
+      ||(p.b.itemId===src.itemId&&p.b.portId===src.portId&&p.a.itemId===itemId&&p.a.portId===portId));
+  });
+  cancelLink();
+  if(dup){render();toast('Это соединение уже есть на схеме');return true}
+  commit();
+  var mat=(pa.type==='ufc'||pa.type==='mancol'||pb.type==='ufc'||pb.type==='mancol')?'pex':'pp';
+  var lastPipeD=null;
+  for(var li=state.pipes.length-1;li>=0;li--){
+    var lp=state.pipes[li];
+    if(pipeMaterial(lp)===mat){ lastPipeD=lp.diameter; break; }
+  }
+  if(lastPipeD==null||pipeDiameters(mat).indexOf(String(lastPipeD))<0) lastPipeD=pipeDefaultD(mat);
+  state.pipes.push({id:uid(),a:src,b:{itemId:itemId,portId:portId},diameter:lastPipeD,medium:'sup',material:mat,sub:(mat==='pex'?'PEX-AL-PEX':undefined),ax:0,ay:0,bx:0,by:0});
+  state.sel={kind:'pipe',id:state.pipes[state.pipes.length-1].id};
+  render(); hideHint(); toast(pipeMatName(mat)+' подключена');
+  return true;
+}
+function cancelLink(){ link=null; overlay.innerHTML=''; }
+
+function deleteSelection(){
+  if(state.group.length>1){
+    commit();
+    var ids={}; state.group.forEach(function(id){ids[id]=1});
+    state.items=state.items.filter(function(i){return !ids[i.id]});
+    state.pipes=state.pipes.filter(function(p){return !(p.a&&ids[p.a.itemId])&&!(p.b&&ids[p.b.itemId])});
+    var n=state.group.length; groupClear(); state.sel=null; save(); render();
+    toast('Удалено элементов: '+n); return;
+  }
+  if(!state.sel) return;
+  commit();
+  if(state.sel.kind==='item'){
+    var id=state.sel.id;
+    state.items=state.items.filter(function(i){return i.id!==id});
+    state.pipes=state.pipes.filter(function(p){return !(p.a&&p.a.itemId===id)&&!(p.b&&p.b.itemId===id)});
+    toast('Элемент удалён');
+  } else {
+    state.pipes=state.pipes.filter(function(p){return p.id!==state.sel.id});
+    toast('Соединение удалено');
+  }
+  state.sel=null; save(); render();
+}
+function copySelection(){
+  var ids=state.group.length?state.group.slice():(state.sel&&state.sel.kind==='item'?[state.sel.id]:[]);
+  if(!ids.length){ toast('Нечего копировать — выделите элементы'); return; }
+  var idSet={}; ids.forEach(function(id){idSet[id]=1});
+  clip={
+    items:JSON.parse(JSON.stringify(state.items.filter(function(i){return idSet[i.id]}))),
+    pipes:JSON.parse(JSON.stringify(state.pipes.filter(function(p){
+      return (p.a&&idSet[p.a.itemId]&&(p.b?!!idSet[p.b.itemId]:true))||(p.b&&idSet[p.b.itemId]&&(p.a?!!idSet[p.a.itemId]:true));
+    })))
+  };
+  toast('Скопировано элементов: '+ids.length);
+}
+function pasteClip(){
+  if(!clip||!clip.items.length){ toast('Буфер обмена пуст'); return; }
+  commit();
+  var map={};
+  var newItems=clip.items.map(function(src){
+    var it=JSON.parse(JSON.stringify(src));
+    map[src.id]=it.id=uid();
+    it.x=snap(it.x+40); it.y=snap(it.y+40);
+    return it;
+  });
+  var newPipes=clip.pipes.map(function(p){
+    var np=JSON.parse(JSON.stringify(p)); np.id=uid();
+    if(np.a) np.a.itemId=map[np.a.itemId]||np.a.itemId;
+    if(np.b) np.b.itemId=map[np.b.itemId]||np.b.itemId;
+    return np;
+  });
+  state.items=state.items.concat(newItems);
+  state.pipes=state.pipes.concat(newPipes);
+  groupClear(); newItems.forEach(function(it){state.group.push(it.id)});
+  state.sel=null;
+  save(); render(); renderProps();
+  toast('Вставлено элементов: '+newItems.length);
+}
+function select(kind,id){ state.sel=id?{kind:kind,id:id}:null; groupClear(); render(); }
+
+svg.addEventListener('pointerdown',function(e){
+  if(e.button===1||spaceDown){ startPan(e); return; }
+  if(e.button!==0) return;
+  var portEl=e.target.closest?e.target.closest('.port'):null;
+  var itemEl=e.target.closest?e.target.closest('[data-item]'):null;
+  var pipeEl=e.target.closest?e.target.closest('[data-pipe]'):null;
+  var w=screenToWorld(e);
+
+  if(portEl){
+    if(link){ completeLink(portEl.dataset.item,portEl.dataset.port); }
+    else { startLink(portEl.dataset.item,portEl.dataset.port,e); }
+    e.preventDefault(); return;
+  }
+  var hEl=e.target.closest?e.target.closest('.rhandle'):null;
+  if(hEl){
+    var hit=itemById(hEl.dataset.item);
+    if(hit){
+      state.sel={kind:'item',id:hit.id}; renderProps(); render();
+      drag={mode:'resize',id:hit.id,corner:hEl.dataset.corner,sx:e.clientX,sy:e.clientY,
+            w0:hit.w,h0:hit.h,x0:hit.x,y0:hit.y,ratio:hit.w/hit.h,moved:false};
+      try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    e.preventDefault(); return;
+  }
+  if(state.tool){
+    if(state.tool==='pipe'||state.tool==='pexp'){ startFreePipe(e,w); e.preventDefault(); return; }
+    addItem(state.tool,w.x,w.y);
+    armTool(state.tool);
+    e.preventDefault(); return;
+  }
+  if(itemEl){
+    var it=itemById(itemEl.dataset.item);
+    if(it){
+      if(e.shiftKey||e.ctrlKey||e.metaKey){
+        groupToggle(it.id); state.sel=null; renderProps(); render();
+        e.preventDefault(); return;
+      }
+      if(inGroup(it.id)&&state.group.length>1){
+        state.sel=null; renderProps(); render();
+        var gitems=state.group.map(function(id){
+          var gi=itemById(id); return {id:id,x0:gi.x,y0:gi.y};
+        });
+        drag={mode:'group',items:gitems,sx:e.clientX,sy:e.clientY,moved:false,wx:w.x,wy:w.y};
+        try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+        e.preventDefault(); return;
+      }
+      state.sel={kind:'item',id:it.id}; groupClear(); renderProps(); render();
+      drag={mode:'item',id:it.id,ox:w.x-it.x,oy:w.y-it.y,moved:false,sx:e.clientX,sy:e.clientY};
+      try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    e.preventDefault(); return;
+  }
+  if(pipeEl){
+    var dp=pipeById(pipeEl.dataset.pipe);
+    if(e.shiftKey||e.ctrlKey||e.metaKey){ e.preventDefault(); return; }
+    groupClear();
+    state.sel={kind:'pipe',id:pipeEl.dataset.pipe}; renderProps(); render();
+    if(dp){
+      var dpts=pipePoints(dp);
+      var midx=null,midy=null;
+      if(dpts&&dpts.length>2){ midx=dpts[Math.floor(dpts.length/2)].x; midy=dpts[Math.floor(dpts.length/2)].y; }
+      drag={mode:'pipedrag',id:dp.id,sx:e.clientX,sy:e.clientY,moved:false,
+            ax0:dp.ax,ay0:dp.ay,bx0:dp.bx,by0:dp.by,
+            wx0:(dp.wx!=null?dp.wx:midx), wy0:(dp.wy!=null?dp.wy:midy),
+            hasW:(dp.a&&dp.b),
+            wx:w.x,wy:w.y};
+      try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    e.preventDefault(); return;
+  }
+  if(link){ cancelLink(); render(); }
+  state.sel=null; renderProps(); render();
+  drag={mode:'band',sx:e.clientX,sy:e.clientY,wx:w.x,wy:w.y,x0:w.x,y0:w.y,moved:false};
+  try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+});
+function startPan(e){
+  drag={mode:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};
+  svg.classList.add('panning');
+  try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+}
+var freePipe=null;
+function startFreePipe(e,w){
+  var mat=state.tool==='pexp'?'pex':'pp';
+  freePipe={ax:snap(w.x),ay:snap(w.y),bx:snap(w.x),by:snap(w.y),material:mat};
+  drag={mode:'pipe'};
+  try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+}
+
+svg.addEventListener('pointermove',function(e){
+  var w=screenToWorld(e);
+  if(link){
+    var np=nearestPort(w.x,w.y,link.itemId,link.portId,24);
+    link.tx=np?np.x:w.x; link.ty=np?np.y:w.y; link.snap=np;
+    var a={x:link.x,y:link.y};
+    var pts;
+    if(np&&np.dir!=null) pts=routePoints(a,link.dir||0,np,np.dir);
+    else{
+      var dx=link.tx-a.x, dy=link.ty-a.y;
+      pts=Math.abs(dx)>Math.abs(dy)?[a,{x:link.tx,y:a.y},{x:link.tx,y:link.ty}]:[a,{x:a.x,y:link.ty},{x:link.tx,y:link.ty}];
+      pts=cleanPath(pts)||pts;
+    }
+    overlay.innerHTML='<polyline points="'+ptsStr(pts)+'" fill="none" stroke="'+themeColors(false).accent+'" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>'
+      +'<circle cx="'+link.tx+'" cy="'+link.ty+'" r="7" fill="none" stroke="'+themeColors(false).accent+'" stroke-width="2"/>'
+      +(np?'<circle cx="'+np.x+'" cy="'+np.y+'" r="12" fill="none" stroke="'+themeColors(false).accent+'" stroke-width="3" opacity=".9"/>'
+        +'<circle cx="'+np.x+'" cy="'+np.y+'" r="4" fill="'+themeColors(false).accent+'"/>':'');
+    return;
+  }
+  if(freePipe&&(drag&&drag.mode==='pipe')){
+    var npe=nearestPort(w.x,w.y,null,null,20);
+    freePipe.bx=npe?npe.x:snap(w.x); freePipe.by=npe?npe.y:snap(w.y);
+    freePipe.snapB=npe;
+    var nps=nearestPort(freePipe.ax,freePipe.ay,null,null,20);
+    if(nps){ freePipe.ax=nps.x; freePipe.ay=nps.y; freePipe.snapA=nps; }
+    var tmpPipe={a:freePipe.snapA?{itemId:freePipe.snapA.itemId,portId:freePipe.snapA.portId}:null,
+                 b:freePipe.snapB?{itemId:freePipe.snapB.itemId,portId:freePipe.snapB.portId}:null,
+                 ax:freePipe.ax,ay:freePipe.ay,bx:freePipe.bx,by:freePipe.by};
+    var pvPts=pipePoints(tmpPipe)||orthoRoute({x:freePipe.ax,y:freePipe.ay},{x:freePipe.bx,y:freePipe.by});
+    overlay.innerHTML='<polyline points="'+ptsStr(pvPts)+'" fill="none" stroke="'+themeColors(false).supply+'" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>'
+      +((npe||freePipe.snapA)?'<circle cx="'+freePipe.bx+'" cy="'+freePipe.by+'" r="10" fill="none" stroke="'+themeColors(false).accent+'" stroke-width="2.5"/>':'');
+    return;
+  }
+  if(!drag) return;
+  if(drag.mode==='pan'){
+    var r=svg.getBoundingClientRect();
+    view.x=drag.vx-(e.clientX-drag.sx)*(view.w/r.width);
+    view.y=drag.vy-(e.clientY-drag.sy)*(view.h/r.height);
+    applyView();
+  } else if(drag.mode==='band'){
+    if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>4) drag.moved=true;
+    if(!drag.moved) return;
+    drag.x1=w.x; drag.y1=w.y;
+    var bx=Math.min(drag.x0,drag.x1), by=Math.min(drag.y0,drag.y1);
+    var bw=Math.abs(drag.x1-drag.x0), bh=Math.abs(drag.y1-drag.y0);
+    overlay.innerHTML='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" fill="'+themeColors(false).accent+'" fill-opacity=".1" stroke="'+themeColors(false).accent+'" stroke-width="1.5" stroke-dasharray="6 4"/>';
+  } else if(drag.mode==='group'){
+    if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>4){ drag.moved=true; commit(); }
+    if(!drag.moved) return;
+    var gdx=snap(w.x-drag.wx), gdy=snap(w.y-drag.wy);
+    drag.items.forEach(function(gi){
+      var git=itemById(gi.id); if(!git) return;
+      git.x=gi.x0+gdx; git.y=gi.y0+gdy;
+      var gel=scene.querySelector('[data-item="'+gi.id+'"]');
+      if(gel) gel.setAttribute('transform','translate('+git.x+','+git.y+')');
+      updateAttachedPipes(gi.id);
+    });
+  } else if(drag.mode==='item'){
+    var it=itemById(drag.id); if(!it) return;
+    if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>4){ drag.moved=true; commit(); }
+    if(drag.moved){
+      var pos=magneticSnap(it,snap(w.x-drag.ox),snap(w.y-drag.oy));
+      it.x=pos.x; it.y=pos.y;
+      var g=scene.querySelector('[data-item="'+it.id+'"]');
+      if(g) g.setAttribute('transform','translate('+it.x+','+it.y+')');
+      updateAttachedPipes(it.id);
+      if(lastSnapPort){
+        var sc=themeColors(false);
+        overlay.innerHTML='<circle cx="'+lastSnapPort.x+'" cy="'+lastSnapPort.y+'" r="13" fill="none" stroke="'+sc.accent+'" stroke-width="3" opacity=".95"/>'
+          +'<circle cx="'+lastSnapPort.x+'" cy="'+lastSnapPort.y+'" r="5" fill="'+sc.accent+'"/>';
+      } else overlay.innerHTML='';
+    }
+  } else if(drag.mode==='pipedrag'){
+    var pp=pipeById(drag.id); if(!pp) return;
+    if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>4){ drag.moved=true; commit(); }
+    if(!drag.moved) return;
+    var pdx=snap(w.x-drag.wx), pdy=snap(w.y-drag.wy);
+    if(pp.a&&pp.b){ pp.wx=drag.wx0+pdx; pp.wy=drag.wy0+pdy; }
+    else if(pp.a){ pp.bx=drag.bx0+pdx; pp.by=drag.by0+pdy; }
+    else if(pp.b){ pp.ax=drag.ax0+pdx; pp.ay=drag.ay0+pdy; }
+    else { pp.ax=drag.ax0+pdx; pp.ay=drag.ay0+pdy; pp.bx=drag.bx0+pdx; pp.by=drag.by0+pdy; }
+    var ppts=pipePoints(pp);
+    var pg=scene.querySelector('[data-pipe="'+pp.id+'"]');
+    if(pg&&ppts) pg.querySelectorAll('polyline').forEach(function(pl){ pl.setAttribute('points',ptsStr(ppts)); });
+  } else if(drag.mode==='resize'){
+    var rit=itemById(drag.id); if(!rit) return;
+    if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>3){ drag.moved=true; commit(); }
+    if(!drag.moved) return;
+    var mx=w.x, my=w.y;
+    var right=drag.x0+drag.w0, bottom=drag.y0+drag.h0;
+    var nw,nh;
+    if(drag.corner==='se'){ nw=mx-drag.x0; nh=my-drag.y0; }
+    else if(drag.corner==='sw'){ nw=right-mx; nh=my-drag.y0; }
+    else if(drag.corner==='ne'){ nw=mx-drag.x0; nh=bottom-my; }
+    else { nw=right-mx; nh=bottom-my; }
+    if(e.shiftKey){
+      var k=Math.max(nw/drag.w0,nh/drag.h0);
+      nw=drag.w0*k; nh=drag.h0*k;
+    }
+    nw=Math.max(24,Math.round(nw/GRID)*GRID); nh=Math.max(20,Math.round(nh/GRID)*GRID);
+    rit.w=nw; rit.h=nh;
+    if(drag.corner==='sw'||drag.corner==='nw') rit.x=right-nw; else rit.x=drag.x0;
+    if(drag.corner==='ne'||drag.corner==='nw') rit.y=bottom-nh; else rit.y=drag.y0;
+    renderScene();
+    updateAttachedPipes(rit.id);
+  }
+});
+function updateAttachedPipes(itemId){
+  state.pipes.forEach(function(p){
+    if((p.a&&p.a.itemId===itemId)||(p.b&&p.b.itemId===itemId)){
+      var pts=pipePoints(p); if(!pts) return;
+      var g=scene.querySelector('[data-pipe="'+p.id+'"]');
+      if(g) g.querySelectorAll('polyline').forEach(function(pl,i){ pl.setAttribute('points',ptsStr(pts)); });
+    }
+  });
+}
+svg.addEventListener('pointerup',function(e){
+  if(freePipe&&(drag&&drag.mode==='pipe')){
+    if(Math.hypot(freePipe.bx-freePipe.ax,freePipe.by-freePipe.ay)>GRID){
+      commit();
+      var npa=freePipe.snapA||null, npb=freePipe.snapB||null;
+      var pm=pipeMaterial(freePipe);
+      var p={id:uid(),
+        a:npa?{itemId:npa.itemId,portId:npa.portId}:null,
+        b:npb?{itemId:npb.itemId,portId:npb.portId}:null,
+        ax:freePipe.ax,ay:freePipe.ay,bx:freePipe.bx,by:freePipe.by,diameter:pipeDefaultD(pm),medium:'sup',material:pm,sub:(pm==='pex'?'PEX-AL-PEX':undefined)};
+      state.pipes.push(p); state.sel={kind:'pipe',id:p.id};
+      save(); hideHint(); toast(npa||npb?pipeMatName(pm)+' подключена к порту':pipeMatName(pm)+' добавлена');
+    }
+    freePipe=null; overlay.innerHTML=''; render(); drag=null; armTool(state.tool); return;
+  }
+  if(link){
+    if(link.snap){ completeLink(link.snap.itemId,link.snap.portId); }
+    else {
+      var el=document.elementFromPoint(e.clientX,e.clientY);
+      var portEl=el&&el.closest?el.closest('.port'):null;
+      if(portEl){ completeLink(portEl.dataset.item,portEl.dataset.port); }
+      else { cancelLink(); render(); }
+    }
+    linkRef=false; drag=null; return;
+  }
+  if(drag&&(drag.mode==='item'||drag.mode==='resize'||drag.mode==='pipedrag'||drag.mode==='group')&&drag.moved){ save(); render(); }
+  if(drag&&drag.mode==='band'){
+    if(drag.moved){
+      var bx=Math.min(drag.x0,drag.x1), by=Math.min(drag.y0,drag.y1);
+      var bw=Math.abs(drag.x1-drag.x0), bh=Math.abs(drag.y1-drag.y0);
+      groupClear();
+      if(bw>4&&bh>4){
+        state.items.forEach(function(it){
+          var bb=itemBBox(it);
+          if(bb.x<bx+bw&&bb.x+bb.w>bx&&bb.y<by+bh&&bb.y+bb.h>by) state.group.push(it.id);
+        });
+      }
+      if(state.group.length===1){ state.sel={kind:'item',id:state.group[0]}; groupClear(); }
+      else if(state.group.length>1){ toast('Выбрано элементов: '+state.group.length); }
+      renderProps(); render();
+    }
+    overlay.innerHTML='';
+  }
+  if(drag&&drag.mode==='pan') svg.classList.remove('panning');
+  drag=null;
+});
+svg.addEventListener('wheel',function(e){
+  e.preventDefault();
+  var w=screenToWorld(e);
+  zoomAt(e.deltaY<0?1.12:1/1.12,w.x,w.y);
+},{passive:false});
+svg.addEventListener('contextmenu',function(e){e.preventDefault()});
+
+window.addEventListener('pointerup',function(){
+  if(link){ cancelLink(); render(); }
+  if(freePipe){ freePipe=null; overlay.innerHTML=''; render(); }
+  if(drag){ if(drag.mode==='pan') svg.classList.remove('panning'); if(drag.mode==='item'){ overlay.innerHTML=''; lastSnapPort=null; } drag=null; }
+});
+
+svg.addEventListener('dragover',function(e){e.preventDefault()});
+svg.addEventListener('drop',function(e){
+  e.preventDefault();
+  var t=e.dataTransfer.getData('text/plain');
+  if(t&&CAT[t]&&t!=='pipe'&&t!=='pexp'){ var w=screenToWorld(e); addItem(t,w.x,w.y); }
+});
+
+/* ---------- catalog UI ---------- */
+function previewSVG(type){
+  var cat=CAT[type];
+  if(type==='pipe'||type==='pexp'){
+    var pcol=type==='pexp'?'#F59E0B':'#FF6B35';
+    return '<svg width="72" height="40" viewBox="0 0 72 40"><line x1="4" y1="20" x2="68" y2="20" stroke="'+pcol+'" stroke-width="6" stroke-linecap="round"/>'
+      +'<circle cx="4" cy="20" r="4" fill="#0E1626" stroke="'+pcol+'" stroke-width="2"/><circle cx="68" cy="20" r="4" fill="#0E1626" stroke="'+pcol+'" stroke-width="2"/></svg>';
+  }
+  if(type==='label'){
+    return '<svg width="74" height="44" viewBox="0 0 74 44"><rect x="4" y="10" width="66" height="24" rx="5" fill="rgba(255,255,255,.06)" stroke="#FF6B35" stroke-width="1.5" stroke-dasharray="5 3"/>'
+      +'<text x="37" y="26" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#E2E8F0">Подпись</text></svg>';
+  }
+  var fake={type:type,w:cat.w,h:cat.h,spec:cat.specs[0],angle:0,pairs:2,circuits:6};
+  if(type==='hydro'){ var gg=hydroGeom(fake); fake.w=gg.w; fake.h=gg.h; }
+  if(type==='mancol'){ var gg2=manGeom(fake); fake.w=gg2.w; fake.h=gg2.h; }
+  var pad=8;
+  return '<svg width="74" height="44" viewBox="'+(-pad)+' '+(-pad)+' '+(fake.w+pad*2)+' '+(fake.h+pad*2)+'" overflow="visible">'
+    +symbolMarkup(fake,{stroke:'#94A3B8',fill:'#141C2E',text:'#E2E8F0',muted:'#94A3B8',supply:'#FF6B35',ret:'#38BDF8',accent:'#FF6B35',bg:'#0E1626',grid:'rgba(255,255,255,.1)',chip:'rgba(255,255,255,.08)'})
+    +'</svg>';
+}
+function buildCatalog(){
+  var groups=[],map={};
+  CATALOG.forEach(function(c){
+    if(!map[c.group]){map[c.group]={name:c.group,items:[]};groups.push(map[c.group])}
+    map[c.group].items.push(c);
+  });
+  var html='';
+  groups.forEach(function(g){
+    html+='<div class="cat-group"><div class="cat-label"><i>'+g.items[0].num+'</i>'+esc(g.name)+'</div><div class="cat-grid">';
+    g.items.forEach(function(c){
+      html+='<div class="card" data-type="'+c.id+'" draggable="true" title="'+esc(c.name+' — '+c.short)+'">'
+        +'<div class="prev">'+previewSVG(c.id)+'</div>'
+        +'<div class="nm">'+esc(c.name)+'</div>'
+        +'<div class="sp">'+esc(c.specs.length>1?c.specs[0]+' +':c.specs[0])+'</div></div>';
+    });
+    html+='</div></div>';
+  });
+  $('#catalog').innerHTML=html;
+  $('#catalog').querySelectorAll('.card').forEach(function(el){
+    el.addEventListener('click',function(){ armTool(el.dataset.type) });
+    el.addEventListener('dragstart',function(e){ e.dataTransfer.setData('text/plain',el.dataset.type); e.dataTransfer.effectAllowed='copy'; });
+  });
+}
+
+/* ---------- inspector ---------- */
+function renderProps(){
+  var box=$('#propsPanel');
+  if(state.group.length>1){
+    box.innerHTML='<div class="typebadge"><div class="tb-prev">▦</div>'
+     +'<div><div class="tb-n">Группа: '+state.group.length+' элементов</div>'
+     +'<div class="tb-s">Перетаскивание — двигает всю группу</div></div></div>'
+     +'<div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:12px">'
+     +'Shift+клик — добавить/убрать из группы.<br>'
+     +'Ctrl+C — копировать, Ctrl+V — вставить, Ctrl+D — дублировать.<br>'
+     +'Delete — удалить группу, Esc — снять выделение.</div>'
+     +'<div class="row"><button class="btn" id="gCopy">Копировать</button>'
+     +'<button class="btn" id="gPaste">Вставить</button></div>'
+     +'<div class="row"><button class="btn danger" id="gDel">Удалить группу</button>'
+     +'<button class="btn" id="gClear">Снять выделение</button></div>';
+    $('#gCopy').onclick=copySelection;
+    $('#gPaste').onclick=pasteClip;
+    $('#gDel').onclick=deleteSelection;
+    $('#gClear').onclick=function(){groupClear();renderProps();render()};
+    return;
+  }
+  if(!state.sel){
+    var h='<div class="empty"><div class="big">⚙</div>'
+      +'<b style="color:#C7D2E4;font-size:13px">Ничего не выбрано</b><br>'
+      +'Кликните по элементу схемы, чтобы изменить типоразмер, примечание или удалить его.</div>';
+    if(state.diag&&state.diag.length){
+      h+='<div class="diag"><h4>Проверка схемы</h4><ul>';
+      state.diag.forEach(function(d){ h+='<li>'+esc(d)+'</li>'; });
+      h+='</ul><button class="btn" id="diagHide" style="margin-top:6px;width:100%">Скрыть</button></div>';
+    } else if(state.diag){
+      h+='<div class="diag"><span class="ok">✓ Замечаний не найдено</span>'
+        +'<button class="btn" id="diagHide" style="margin-top:6px;width:100%">Скрыть</button></div>';
+    }
+    if(state.bg&&state.bg.url){
+      h+='<section class="block"><h3>Подложка (план)</h3>'
+       +'<div class="field"><label>Прозрачность</label><input id="bgOp" type="range" min="5" max="100" value="'+Math.round((state.bg.opacity!=null?state.bg.opacity:0.5)*100)+'"></div>'
+       +'<div class="field"><label>Ширина, мм (условн.)</label><input id="bgW" type="number" min="100" max="20000" step="50" value="'+Math.round(state.bg.w)+'"></div>'
+       +'<div class="field"><label>Высота, мм (условн.)</label><input id="bgH" type="number" min="100" max="20000" step="50" value="'+Math.round(state.bg.h)+'"></div>'
+       +'<div class="row"><button class="btn" id="bgCenter">По центру вида</button>'
+       +'<button class="btn danger" id="bgDel">Удалить план</button></div></section>';
+    }
+    if(state.branches.length){
+      h+='<section class="block"><h3>Ветки</h3>';
+      state.branches.forEach(function(b){
+        var ni=0,np=0;
+        state.items.forEach(function(it){ if(it.branch===b.id) ni++; });
+        state.pipes.forEach(function(p){ if(p.branch===b.id) np++; });
+        h+='<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:4px">'
+         +'<span style="width:11px;height:11px;border-radius:3px;background:'+b.color+';flex:none"></span>'
+         +'<span style="flex:1">'+esc(b.name)+' <span style="color:var(--muted)">('+ni+' эл., '+np+' тр.)</span></span>'
+         +'<button class="btn" data-bdel="'+b.id+'" style="padding:1px 6px;font-size:10px" title="Удалить ветку">✕</button></div>';
+      });
+      h+='</section>';
+    }
+    box.innerHTML=h;
+    if($('#diagHide')) $('#diagHide').onclick=function(){ state.diag=null; renderProps(); };
+    if($('#bgOp')) $('#bgOp').oninput=function(){ state.bg.opacity=this.value/100; renderScene(); };
+    if($('#bgOp')) $('#bgOp').onchange=function(){ save(); };
+    if($('#bgW')) $('#bgW').onchange=function(){ commit(); state.bg.w=Math.max(100,+this.value||1200); save(); render(); };
+    if($('#bgH')) $('#bgH').onchange=function(){ commit(); state.bg.h=Math.max(100,+this.value||800); save(); render(); };
+    if($('#bgCenter')) $('#bgCenter').onclick=function(){
+      commit();
+      state.bg.x=Math.round(view.x+view.w/2-state.bg.w/2);
+      state.bg.y=Math.round(view.y+view.h/2-state.bg.h/2);
+      save(); render(); toast('План отцентрирован по виду');
+    };
+    if($('#bgDel')) $('#bgDel').onclick=function(){ commit(); state.bg=null; save(); render(); toast('План удалён'); };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-bdel]'),function(btn){
+      btn.onclick=function(){
+        var id=btn.getAttribute('data-bdel');
+        commit();
+        state.branches=state.branches.filter(function(b){return b.id!==id});
+        state.items.forEach(function(it){ if(it.branch===id) delete it.branch; });
+        state.pipes.forEach(function(p){ if(p.branch===id) delete p.branch; });
+        save(); render(); toast('Ветка удалена');
+      };
+    });
+    return;
+  }
+  if(state.sel.kind==='item'){
+    var it=itemById(state.sel.id); if(!it){state.sel=null;return renderProps()}
+    var cat=CAT[it.type];
+    var opts=cat.specs.map(function(s){return '<option'+(s===it.spec?' selected':'')+'>'+esc(s)+'</option>'}).join('');
+    var layoutField='';
+    if(it.type==='hydro'){
+      var pairOpts='';
+      for(var pn=1;pn<=7;pn++) pairOpts+='<option value="'+pn+'"'+(hydroPairs(it)===pn?' selected':'')+'>'+pn+' '+(pn===1?'пара':(pn<5?'пары':'пар'))+'</option>';
+      layoutField='<div class="field"><label>Пар контуров</label><select id="fPairs">'+pairOpts+'</select></div>'
+       +'<div class="field"><label>Направление выводов контуров</label><select id="fHDir">'
+       +'<option value="side"'+(hydroHDir(it)==='side'?' selected':'')+'>С одной стороны ножки (с торца)</option>'
+       +'<option value="both"'+(it.hdir==='both'?' selected':'')+'>С обеих сторон ножки</option>'
+       +'</select></div>'
+       +'<div style="font-size:10.5px;color:var(--muted);margin:-6px 0 12px;line-height:1.5">Пары чередуются, начиная с подачи (красная), затем обратка (синяя). Шаг одинаковый — под стандартный насос. На перекладине «ГС» — вход и выход с котла.</div>';
+    }
+    if(it.type==='mancol'){
+      var circOpts='';
+      for(var cn=2;cn<=12;cn++) circOpts+='<option value="'+cn+'"'+(manCircuits(it)===cn?' selected':'')+'>'+cn+' '+(cn===2?'контура':(cn<5?'контура':'контуров'))+'</option>';
+      var ct=manCtab(it), rows='';
+      for(var ci=0;ci<ct.length;ci++){
+        var fl=circuitFlowLmin(ct[ci].area);
+        rows+='<tr><td><input data-ctn="'+ci+'" type="text" value="'+esc(ct[ci].name)+'" title="Название контура"></td>'
+         +'<td><input data-cta="'+ci+'" type="number" min="0" max="500" step="0.5" value="'+(+ct[ci].area||0)+'" title="Площадь контура, м²"></td>'
+         +'<td><input data-ctl="'+ci+'" type="number" min="10" max="250" step="1" value="'+(+ct[ci].len||80)+'" title="Длина контура, м"></td>'
+         +'<td class="fl">'+(fl>0?fl+' л/мин':'—')+'</td></tr>';
+      }
+      layoutField='<div class="field"><label>Контуров ТП</label><select id="fCircuits">'+circOpts+'</select></div>'
+       +'<div class="field" style="margin-bottom:10px"><label>Раскладка контуров</label>'
+       +'<table class="mtable"><thead><tr><th style="width:38%">Контур</th><th>М²</th><th>М</th><th>Расход</th></tr></thead><tbody>'+rows+'</tbody></table>'
+       +'<div style="font-size:9.5px;color:var(--muted);line-height:1.4">Расход рассчитан при 100 Вт/м² и ΔT 10 °C. Строки контуров попадают в ведомость (расходомеры).</div></div>'
+       +'<div style="font-size:10.5px;color:var(--muted);margin:-6px 0 12px;line-height:1.5">Верхняя планка — подача (красная), нижняя — обратка (синяя). Вход/выход коллектора слева. Каждый контур — пара выводов вниз.</div>';
+    }
+    if(it.type==='ufc'){
+      layoutField='<div class="field"><label>Длина контура, м</label><input id="fClen" type="number" min="20" max="250" step="1" value="'+ufcLenM(it)+'"></div>'
+       +'<div style="font-size:10.5px;color:var(--muted);margin:-6px 0 12px;line-height:1.5">Труба PEX укладывается спиралью («улитка»). Длина контура учитывается в ведомости (труба PEX).</div>';
+    }
+    var powerField='';
+    if(POWER_TYPES[it.type]){
+      var pv=itemPower(it);
+      powerField='<div class="field"><label>Мощность, кВт'+(BOILER_TYPES[it.type]?' (котёл)':' (тепловая нагрузка)')+'</label>'
+       +'<input id="fPower" type="number" min="0.1" max="200" step="0.1" value="'+(pv!=null?pv:(defaultPower(it)||''))+'"></div>';
+    }
+    var branchOpts='';
+    state.branches.forEach(function(b){
+      branchOpts+='<option value="'+b.id+'"'+(it.branch===b.id?' selected':'')+'>'+esc(b.name)+'</option>';
+    });
+    var branchField='<div class="field"><label>Ветка</label><select id="fBranch">'
+     +'<option value=""'+(!it.branch?' selected':'')+'>— без ветки —</option>'+branchOpts+'</select>'
+     +'<button class="btn" id="fBranchAdd" style="margin-top:6px;width:100%">+ Новая ветка</button></div>';
+    box.innerHTML=''
+     +'<div class="typebadge"><div class="tb-prev">'+previewSVG(it.type)+'</div>'
+     +'<div><div class="tb-n">'+esc(cat.name)+'</div><div class="tb-s">'+esc(cat.short)+'</div></div></div>'
+     +'<div class="field"><label>Типоразмер / модель</label><select id="fSpec">'+opts+'</select></div>'
+     +layoutField
+     +powerField
+     +'<div class="field"><label>Обозначение на схеме</label><input id="fName" type="text" placeholder="Напр.: Р-01, кабинет 205" value="'+esc(it.name||'')+'"></div>'
+     +'<div class="field"><label>Примечание</label><textarea id="fNotes" rows="2" placeholder="Производитель, число секций, высота...">'+esc(it.notes||'')+'</textarea></div>'
+     +branchField
+     +'<div class="field"><label>Поворот элемента</label><div class="row" id="fRotRow">'
+     +'<button class="btn" data-rot="45">45°</button><button class="btn" data-rot="90">90°</button>'
+     +'<button class="btn" data-rot="180">180°</button><button class="btn" data-rot="270">270°</button></div></div>'
+     +'<div class="field"><label>Отражение по осям</label><div class="row" id="fFlipRow">'
+     +'<button class="btn'+(it.fx?' primary':'')+'" data-flip="x" title="Отразить по вертикальной оси (влево/вправо)">↔ По X</button>'
+     +'<button class="btn'+(it.fy?' primary':'')+'" data-flip="y" title="Отразить по горизонтальной оси (вверх/вниз)">↕ По Y</button></div></div>'
+     +'<div class="row"><button class="btn danger" id="fDel">Удалить</button></div>'
+     +'<section class="block"><h3>Данные</h3>'
+     +'<div class="bom-sum"><div class="stat"><b>'+(it.angle||0)+'°</b><span>Поворот</span></div>'
+     +'<div class="stat"><b>'+cat.unit+'</b><span>Ед. измерения</span></div></div></section>';
+    $('#fSpec').onchange=function(){ commit(); it.spec=this.value; if(FIT_TYPES[it.type]){ applyDims(it); dropDanglingPorts(it); } save(); render(); toast('Типоразмер обновлён'); };
+    if($('#fPairs')) $('#fPairs').onchange=function(){ commit(); it.pairs=parseInt(this.value,10); applyDims(it); dropDanglingPorts(it); save(); render(); toast('Число пар обновлено'); };
+    if($('#fCircuits')) $('#fCircuits').onchange=function(){ commit(); it.circuits=parseInt(this.value,10); applyDims(it); dropDanglingPorts(it); save(); render(); toast('Число контуров обновлено'); };
+    if($('#fHDir')) $('#fHDir').onchange=function(){ commit(); it.hdir=this.value; applyDims(it); dropDanglingPorts(it); save(); render(); toast('Направление выводов обновлено'); };
+    if($('#fClen')) $('#fClen').onchange=function(){ commit(); var v=parseInt(this.value,10); it.clen=(v>=20&&v<=250)?v:90; this.value=it.clen; save(); render(); toast('Длина контура: '+it.clen+' м'); };
+    if($('#fPower')) $('#fPower').onchange=function(){ commit(); var v=parseFloat(String(this.value).replace(',','.')); it.power=(v>0&&v<=200)?Math.round(v*100)/100:0.1; this.value=it.power; save(); render(); toast('Мощность: '+it.power+' кВт'); };
+    if($('#fBranch')) $('#fBranch').onchange=function(){ commit(); if(this.value) it.branch=this.value; else delete it.branch; save(); render(); };
+    if($('#fBranchAdd')) $('#fBranchAdd').onclick=function(){
+      var nm=prompt('Название ветки:','Ветка '+(state.branches.length+1));
+      if(nm===null) return;
+      commit();
+      var b=addBranch(nm.trim()||null);
+      it.branch=b.id;
+      save(); render(); toast('Ветка «'+b.name+'» создана');
+    };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-ctn]'),function(inp){
+      inp.onchange=function(){ commit(); var i=+inp.getAttribute('data-ctn'); manCtab(it)[i].name=inp.value||('Контуp '+(i+1)); save(); render(); };
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-cta]'),function(inp){
+      inp.onchange=function(){ commit(); var i=+inp.getAttribute('data-cta'); var v=parseFloat(inp.value); manCtab(it)[i].area=(v>=0&&v<=500)?v:0; save(); render(); };
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-ctl]'),function(inp){
+      inp.onchange=function(){ commit(); var i=+inp.getAttribute('data-ctl'); var v=parseFloat(inp.value); manCtab(it)[i].len=(v>=10&&v<=250)?Math.round(v):80; save(); render(); };
+    });
+    $('#fName').oninput=function(){ it.name=this.value; if(it.type==='label'){ applyDims(it); renderScene(); } save(); renderStatus(); };
+    $('#fNotes').oninput=function(){ it.notes=this.value; save(); };
+    Array.prototype.forEach.call(document.querySelectorAll('#fRotRow [data-rot]'),function(btn){
+      btn.onclick=function(){
+        commit();
+        it.angle=((it.angle||0)+parseInt(btn.dataset.rot,10))%360;
+        save(); render(); toast('Поворот +'+btn.dataset.rot+'° (итого '+(it.angle||0)+'°)');
+      };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#fFlipRow [data-flip]'),function(btn){
+      btn.onclick=function(){
+        commit();
+        var ax=btn.dataset.flip;
+        if(ax==='x') it.fx=!it.fx; else it.fy=!it.fy;
+        save(); render();
+        toast((ax==='x'?'Отражение по X':'Отражение по Y')+': '+((ax==='x'?it.fx:it.fy)?'вкл':'выкл'));
+      };
+    });
+    $('#fDel').onclick=deleteSelection;
+  } else {
+    var p=pipeById(state.sel.id); if(!p){state.sel=null;return renderProps()}
+    var pts=pipePoints(p); var len=pts?ptsLen(pts)/PX_PER_M:0;
+    var pm=pipeMaterial(p);
+    var psub=p.sub==='PEX'?'PEX':'PEX-AL-PEX';
+    var dl=pipeDiameters(pm);
+    var ds=dl.map(function(d){return '<option value="'+d+'"'+(String(p.diameter)===d?' selected':'')+'>'+(pm==='pex'?psub+' Ø':'PP-РЦ Ø')+d+'</option>'}).join('');
+    var hi=pipeFlowInfo(p);
+    var hydRow='';
+    if(hi){
+      var vCls=hi.v>2.5?' style="color:#EF4444;font-weight:700"':'';
+      hydRow='<section class="block"><h3>Гидравлика (оценка)</h3>'
+       +'<div class="bom-sum"><div class="stat"><b>'+hi.G+' л/мин</b><span>расход</span></div>'
+       +'<div class="stat"><b'+vCls+'>'+hi.v+' м/с</b><span>скорость</span></div></div>'
+       +(hi.v>2.5?'<div style="font-size:10.5px;color:#EF4444;margin-top:6px;line-height:1.4">Скорость выше 2,5 м/с — увеличьте диаметр трубы.</div>':'')
+       +'<div style="font-size:10px;color:var(--muted);margin-top:4px">По нагрузке прибора '+hi.power+' кВт, ΔT 20 °C.</div></section>';
+    }
+    var pBranchOpts='';
+    state.branches.forEach(function(b){
+      pBranchOpts+='<option value="'+b.id+'"'+(p.branch===b.id?' selected':'')+'>'+esc(b.name)+'</option>';
+    });
+    var pSubField='';
+    if(pm==='pex'){
+      pSubField='<div class="field"><label>Подтип PEX</label><select id="fSub">'
+       +'<option value="PEX-AL-PEX"'+(psub==='PEX-AL-PEX'?' selected':'')+'>PEX-AL-PEX (с кислородным барьером)</option>'
+       +'<option value="PEX"'+(psub==='PEX'?' selected':'')+'>PEX (чистый сшитый полиэтилен)</option></select></div>';
+    }
+    box.innerHTML=''
+     +'<div class="typebadge"><div class="tb-prev">'+previewSVG(pm==='pex'?'pexp':'pipe')+'</div>'
+     +'<div><div class="tb-n">'+pipeMatName(pm)+'</div><div class="tb-s">'+(pm==='pex'?'Сшитый полиэтилен'+(psub==='PEX'?', PEX':'-AL-PEX'):'Полипропилен, стекловолокно PP-RC')+'</div></div></div>'
+     +'<div class="field"><label>Материал трубы</label><select id="fMat">'
+     +'<option value="pp"'+(pm==='pp'?' selected':'')+'>Полипропилен ПП (PP-RC)</option>'
+     +'<option value="pex"'+(pm==='pex'?' selected':'')+'>Сшитый полиэтилен PEX</option></select></div>'
+     +pSubField
+     +'<div class="field"><label>Диаметр трубы</label><select id="fD">'+ds+'</select></div>'
+     +'<div class="field"><label>Контур</label><select id="fM">'
+     +'<option value="sup"'+(p.medium!=='ret'?' selected':'')+'>Подача (нагрев)</option>'
+     +'<option value="ret"'+(p.medium==='ret'?' selected':'')+'>Обратка (охлаждение)</option></select></div>'
+     +'<div class="field"><label>Ветка</label><select id="fBranch">'
+     +'<option value=""'+(!p.branch?' selected':'')+'>— без ветки —</option>'+pBranchOpts+'</select>'
+     +'<button class="btn" id="fBranchAdd" style="margin-top:6px;width:100%">+ Новая ветка</button></div>'
+     +'<div class="field"><label>Длина (расчётная)</label><input class="ro" type="text" readonly value="'+len.toFixed(2)+' м"></div>'
+     +hydRow
+     +'<div class="row"><button class="btn danger" id="fDel">Удалить соединение</button></div>';
+    $('#fMat').onchange=function(){
+      commit();
+      p.material=this.value==='pex'?'pex':'pp';
+      if(p.material==='pex'&&!p.sub) p.sub='PEX-AL-PEX';
+      var ndl=pipeDiameters(p.material);
+      if(ndl.indexOf(String(p.diameter))<0) p.diameter=pipeDefaultD(p.material);
+      save(); render(); toast('Материал: '+(p.material==='pex'?'PEX':'ПП'));
+    };
+    if($('#fSub')) $('#fSub').onchange=function(){ commit(); p.sub=this.value==='PEX'?'PEX':'PEX-AL-PEX'; save(); render(); toast('Подтип: '+p.sub); };
+    $('#fD').onchange=function(){ commit(); p.diameter=this.value; save(); render(); toast('Диаметр изменён на Ø'+this.value); };
+    $('#fM').onchange=function(){ commit(); p.medium=this.value; save(); render(); };
+    $('#fBranch').onchange=function(){ commit(); if(this.value) p.branch=this.value; else delete p.branch; save(); render(); };
+    $('#fBranchAdd').onclick=function(){
+      var nm=prompt('Название ветки:','Ветка '+(state.branches.length+1));
+      if(nm===null) return;
+      commit();
+      var b=addBranch(nm.trim()||null);
+      p.branch=b.id;
+      save(); render(); toast('Ветка «'+b.name+'» создана');
+    };
+    $('#fDel').onclick=deleteSelection;
+  }
+}
+function dropDanglingPorts(it){
+  var ids={}; getPorts(it).forEach(function(p){ids[p.id]=1});
+  state.pipes=state.pipes.filter(function(p){
+    if(p.a&&p.a.itemId===it.id&&!ids[p.a.portId]) return false;
+    if(p.b&&p.b.itemId===it.id&&!ids[p.b.portId]) return false;
+    return true;
+  });
+}
+
+/* ---------- BOM ---------- */
+function buildBOM(){
+  var map={},order=[];
+  function add(key,num,name,spec,qty,unit,note){
+    if(!map[key]){map[key]={num:num,name:name,spec:spec,qty:0,unit:unit,note:note||''};order.push(key)}
+    map[key].qty+=qty;
+    if(note&&map[key].note.indexOf(note)<0) map[key].note=map[key].note?(map[key].note+'; '+note):note;
+  }
+  state.items.forEach(function(it){
+    var cat=CAT[it.type]; if(!cat||it.type==='label') return;
+    var num=parseInt(cat.num,10);
+    var note=it.name||'';
+    if(it.notes) note=note?(note+' — '+it.notes):it.notes;
+    if(it.branch){ var bn=branchName(it.branch); if(bn) note=note?('Ветка «'+bn+'»; '+note):('Ветка «'+bn+'»'); }
+    if(it.type==='ufc'){
+      add('ufcpex|'+it.spec, 24, 'Труба PEX (тёплый пол, улитка)', it.spec, ufcLenM(it), 'м', note);
+      return;
+    }
+    if(it.type==='mancol'){
+      add(it.type+'|'+it.spec,num,cat.name,it.spec,1,cat.unit,note);
+      var ct=manCtab(it);
+      for(var ct_i=0;ct_i<ct.length;ct_i++){
+        var ar=+ct[ct_i].area||0, ln=+ct[ct_i].len||0;
+        if(ar>0){
+          var fl=circuitFlowLmin(ar);
+          var cnote='Контур «'+ct[ct_i].name+'»: '+ar+' м², '+ln+' м'+(fl>0?', ~'+fl+' л/мин':'');
+          if(it.branch) cnote='Ветка «'+branchName(it.branch)+'», '+cnote;
+          add('mancolrm|'+it.id+'|'+ct_i, 34, 'Расходомер коллекторный с запорным клапаном', cat.specs.indexOf(it.spec)>=0?it.spec:cat.specs[0], 1, 'шт', cnote);
+        }
+      }
+      return;
+    }
+    add(it.type+'|'+it.spec,num,cat.name,it.spec,1,cat.unit,note);
+  });
+  var PP_ADAPT={'Ø20 (½")':'ПП Ø20 × ½" НР','Ø25 (¾")':'ПП Ø25 × ¾" НР','Ø32 (1")':'ПП Ø32 × 1" НР','Ø40 (1¼")':'ПП Ø40 × 1¼" НР','Ø50 (1½")':'ПП Ø50 × 1½" НР','Ø63 (2")':'ПП Ø63 × 2" НР'};
+  state.items.forEach(function(it){
+    if(it.type!=='valve'&&it.type!=='union'&&it.type!=='balancing'&&it.type!=='tvalve'&&it.type!=='shutoff') return;
+    var ad=PP_ADAPT[it.spec]; if(!ad) return;
+    add('ppadapt|'+ad, 35, 'Муфта комбинированная ПП-НР (ПП на наружную металлическую резьбу)', ad, 2, 'шт', 'К крану: 2 шт (обе стороны)');
+  });
+  var pipeMap={},pipeOrder=[];
+  state.pipes.forEach(function(p){
+    var pm=pipeMaterial(p);
+    var sub=pm==='pex'?(p.sub==='PEX'?'PEX':'PEX-AL-PEX'):'';
+    var k=pm+'|'+sub+'|'+String(p.diameter).replace('Ø','');
+    if(!pipeMap[k]){pipeMap[k]={mat:pm,sub:sub,d:String(p.diameter).replace('Ø',''),len:0,n:0,branch:''};pipeOrder.push(k)}
+    pipeMap[k].len+=pipeLenM(p); pipeMap[k].n++;
+    if(p.branch){ var pbn=branchName(p.branch); if(pbn&&pipeMap[k].branch.indexOf(pbn)<0) pipeMap[k].branch=pipeMap[k].branch?(pipeMap[k].branch+', '+pbn):pbn; }
+  });
+  var out=[];
+  var arr=[];
+  order.forEach(function(k){arr.push(map[k])});
+  arr.sort(function(a,b){return a.num-b.num});
+  var n=0;
+  arr.forEach(function(r){ out.push({name:r.name,spec:r.spec,qty:(r.qty%1?r.qty.toFixed(1):r.qty),unit:r.unit,note:r.note,num:r.num}); });
+  pipeOrder.forEach(function(k){
+    var r=pipeMap[k];
+    var pnote='Отрезков на схеме: '+r.n+(r.branch?(' · Ветки: '+r.branch):'');
+    if(r.mat==='pex'){
+      var pname=r.sub==='PEX'?'Труба PEX (сшитый полиэтилен)':'Труба PEX-AL-PEX (сшитый полиэтилен с кислородным барьером)';
+      out.push({name:pname,spec:'Ø'+r.d,qty:r.len.toFixed(2),unit:'м',note:pnote,num:25});
+    }
+    else out.push({name:'Труба ПП (полипропилен, PP-RC)',spec:'Ø'+r.d,qty:r.len.toFixed(2),unit:'м',note:pnote,num:6});
+  });
+  out.sort(function(a,b){return a.num-b.num});
+  var rows=out.map(function(r,i){r.no=i+1;return r});
+  var totalLen=0; pipeOrder.forEach(function(k){ if(pipeMap[k].mat==='pp') totalLen+=pipeMap[k].len; });
+  var pexLen=0; rows.forEach(function(r){ if(r.num===24||(r.num===25&&r.unit==='м')) pexLen+=parseFloat(r.qty)||0; });
+  return {rows:rows,totalLen:totalLen,pexLen:pexLen};
+}
+function renderBOM(){
+  var b=buildBOM();
+  var ls=loadSumKW(), gs=genSumKW();
+  var html='<div class="bom-sum">'
+    +'<div class="stat"><b>'+b.rows.length+'</b><span>позиций</span></div>'
+    +'<div class="stat"><b>'+b.totalLen.toFixed(1)+' м</b><span>труб ПП</span></div>'
+    +(b.pexLen>0?'<div class="stat"><b>'+b.pexLen.toFixed(1)+' м</b><span>труб PEX</span></div>':'')
+    +(ls>0?'<div class="stat"><b>'+ls.toFixed(1)+' кВт</b><span>нагрузка</span></div>':'')
+    +(gs>0?'<div class="stat"><b>'+gs.toFixed(1)+' кВт</b><span>котёл</span></div>':'')+'</div>';
+  if(!b.rows.length){
+    html+='<div class="empty"><div class="big">≡</div>Перечень пуст — добавьте компоненты на схему.</div>';
+  } else {
+    html+='<table class="bom"><thead><tr><th>№</th><th>Наименование</th><th style="text-align:right">Кол-во</th></tr></thead><tbody>';
+    b.rows.forEach(function(r){
+      html+='<tr><td class="n">'+r.no+'</td>'
+        +'<td><span class="nm">'+esc(r.name)+'</span><span class="sp">'+esc(r.spec)+(r.note?' · '+esc(r.note):'')+'</span></td>'
+        +'<td class="q">'+esc(String(r.qty))+'<span class="u"> '+esc(r.unit)+'</span></td></tr>';
+    });
+    html+='</tbody></table>';
+  }
+  html+='<div class="bom-actions">'
+    +'<button class="btn primary" id="bomCsv">Скачать CSV</button>'
+    +'<button class="btn" id="bomPrint">Печать</button></div>';
+  $('#bomPanel').innerHTML=html;
+  $('#bomCsv').onclick=exportCSV;
+  $('#bomPrint').onclick=doPrint;
+}
+function renderStatus(){
+  var len=0; state.pipes.forEach(function(p){len+=pipeLenM(p)});
+  $('#stItems').textContent=state.items.length;
+  $('#stPipes').textContent=state.pipes.length;
+  $('#stLen').textContent=len.toFixed(1)+' м';
+  var ls=loadSumKW(), gs=genSumKW();
+  $('#stLoad').textContent=ls>0?ls.toFixed(1)+' кВт':'—';
+  $('#stGen').textContent=gs>0?gs.toFixed(1)+' кВт':'—';
+  if(state.tool) $('#stHint').textContent='Инструмент: '+CAT[state.tool].name+' — кликните на поле';
+  else if(state.sel) $('#stHint').textContent=(state.sel.kind==='item'
+    ? 'Выбрано: '+(CAT[itemById(state.sel.id).type]||{}).name
+    : 'Выбрано: '+(pipeMaterial(pipeById(state.sel.id))==='pex'?'труба PEX':'труба ПП'));
+  else $('#stHint').textContent='Панель компонентов слева · тяните от точки к точке для соединения · колесо мыши — масштаб';
+}
+function runDiagnostics(){
+  var d=[];
+  var connected={};
+  state.pipes.forEach(function(p){
+    if(p.a) connected[p.a.itemId+'|'+p.a.portId]=1;
+    if(p.b) connected[p.b.itemId+'|'+p.b.portId]=1;
+  });
+  state.items.forEach(function(it){
+    if(it.type==='label') return;
+    var ps=getPorts(it);
+    if(!ps.length) return;
+    var cnt=0;
+    ps.forEach(function(q){ if(connected[it.id+'|'+q.id]) cnt++; });
+    var nm=it.name||CAT[it.type].name;
+    if(cnt===0) d.push(nm+': нет подключений');
+    else if(it.type!=='mancol'&&it.type!=='hydro'&&cnt<ps.length) d.push(nm+': подключено '+cnt+' из '+ps.length+' выводов');
+  });
+  var freeCnt=0;
+  state.pipes.forEach(function(p){ if(!p.a&&!p.b) freeCnt++; });
+  if(freeCnt>0) d.push('Свободно нарисованных труб (без привязки к портам): '+freeCnt);
+  var ls=loadSumKW(), gs=genSumKW();
+  if(ls>0&&gs<=0) d.push('Указаны нагрузки ('+ls.toFixed(1)+' кВт), но нет котла/его мощности');
+  else if(ls>0&&gs>0&&ls>gs) d.push('Нагрузка '+ls.toFixed(1)+' кВт превышает мощность котла '+gs.toFixed(1)+' кВт');
+  state.items.forEach(function(it){
+    if(it.type==='ufc'&&ufcLenM(it)>120){
+      d.push((it.name||'Контур ТП')+' ('+ufcLenM(it)+' м): длиннее 120 м — проверьте насос');
+    }
+  });
+  state.pipes.forEach(function(p){
+    var hi=pipeFlowInfo(p);
+    if(hi&&hi.v>2.5){
+      var na=p.a?itemById(p.a.itemId):null, nb=p.b?itemById(p.b.itemId):null;
+      var nm=(na&&na.name)||(nb&&nb.name)||('Труба Ø'+hi.D);
+      d.push(nm+': скорость ~'+hi.v+' м/с на Ø'+hi.D+' (>2,5) — увеличьте диаметр');
+    }
+  });
+  state.diag=d;
+  state.sel=null; groupClear();
+  renderProps(); render();
+  toast(d.length?('Проверка: замечаний — '+d.length):'Проверка: замечаний не найдено');
+}
+function exportSVG(){
+  var c=themeColors(true);
+  var b=contentBBox(), pad=56;
+  var vw=Math.max(b.w+pad*2,420), vh=Math.max(b.h+pad*2,300);
+  var vx=b.x+b.w/2-vw/2, vy=b.y+b.h/2-vh/2;
+  var svgStr='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="'+Math.round(vw*2)+'" height="'+Math.round(vh*2+64)+'" '
+    +'viewBox="'+vx+' '+vy+' '+vw+' '+(vh+32)+'" font-family="Arial,sans-serif">'
+    +'<rect x="'+vx+'" y="'+vy+'" width="'+vw+'" height="'+(vh+32)+'" fill="'+c.bg+'"/>'
+    +'<defs>'+defsMarkup(c)+'</defs>'
+    +sceneMarkup(c,false)
+    +'<text x="'+(vx+vw/2)+'" y="'+(vy+vh+18)+'" text-anchor="middle" font-size="13" fill="'+c.muted+'" font-weight="700">'
+    +esc((state.name||'Схема')+' · PLUMBER DESIGN · '+new Date().toLocaleDateString('ru-RU'))+'</text>'
+    +'</svg>';
+  var blob=new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n'+svgStr],{type:'image/svg+xml;charset=utf-8'});
+  downloadBlob(blob,(state.name||'shema').replace(/[\\/:*?"<>|]+/g,'_')+'_'+isoDate()+'.svg');
+  toast('Схема сохранена в SVG');
+}
+
+/* ---------- export ---------- */
+function exportPNG(){
+  var c=themeColors(true);
+  var b=contentBBox(), pad=56;
+  var vw=Math.max(b.w+pad*2,420), vh=Math.max(b.h+pad*2,300);
+  var vx=b.x+b.w/2-vw/2, vy=b.y+b.h/2-vh/2;
+  var svgStr='<svg xmlns="http://www.w3.org/2000/svg" width="'+Math.round(vw*2)+'" height="'+Math.round(vh*2+64)+'" '
+    +'viewBox="'+vx+' '+vy+' '+vw+' '+(vh+32)+'" font-family="Arial,sans-serif">'
+    +'<rect x="'+vx+'" y="'+vy+'" width="'+vw+'" height="'+(vh+32)+'" fill="'+c.bg+'"/>'
+    +'<defs>'+defsMarkup(c)+'</defs>'
+    +sceneMarkup(c,false)
+    +'<text x="'+(vx+vw/2)+'" y="'+(vy+vh+18)+'" text-anchor="middle" font-size="13" fill="'+c.muted+'" font-weight="700">'
+    +'Схема системы отопления · PLUMBER DESIGN · '+new Date().toLocaleDateString('ru-RU')+'</text>'
+    +'</svg>';
+  var img=new Image();
+  img.onload=function(){
+    var cv=document.createElement('canvas');
+    cv.width=Math.round(vw*2); cv.height=Math.round((vh+32)*2);
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle=c.bg; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.drawImage(img,0,0,cv.width,cv.height);
+    cv.toBlob(function(blob){
+      downloadBlob(blob,'shema-otopleniya_'+isoDate()+'.png');
+      toast('Схема сохранена в PNG');
+    },'image/png');
+  };
+  img.onerror=function(){ toast('Не удалось построить PNG'); };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
+}
+function buildCSV(){
+  var b=buildBOM();
+  var lines=['№;Наименование;Типоразмер / характеристика;Кол-во;Ед. изм.;Примечание'];
+  b.rows.forEach(function(r){
+    lines.push([r.no,r.name,r.spec,String(r.qty).replace('.',','),r.unit,(r.note||'').replace(/;/g,',')]
+      .map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(';'));
+  });
+  lines.push('');
+  lines.push('"'+'Дата составления: '+new Date().toLocaleDateString('ru-RU')+'"');
+  lines.push('"'+'Всего труб ПП: '+b.totalLen.toFixed(2).replace('.',',')+' м"');
+  if(b.pexLen>0) lines.push('"'+'Всего труб PEX: '+b.pexLen.toFixed(2).replace('.',',')+' м"');
+  var ls=loadSumKW(), gs=genSumKW();
+  if(ls>0) lines.push('"'+'Тепловая нагрузка приборов: '+ls.toFixed(2).replace('.',',')+' кВт"');
+  if(gs>0) lines.push('"'+'Мощность котла: '+gs.toFixed(2).replace('.',',')+' кВт"');
+  return '\uFEFF'+lines.join('\r\n');
+}
+function exportCSV(){
+  var blob=new Blob([buildCSV()],{type:'text/csv;charset=utf-8'});
+  downloadBlob(blob,'vedomost-materialov_'+isoDate()+'.csv');
+  toast('Ведомость материалов скачана (CSV)');
+}
+function isoDate(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function downloadBlob(blob,name){
+  var a=document.createElement('a'), url=URL.createObjectURL(blob);
+  a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove()},400);
+}
+function doPrint(){
+  var c=themeColors(true);
+  var b=contentBBox(), pad=50;
+  var vw=Math.max(b.w+pad*2,400), vh=Math.max(b.h+pad*2,280);
+  var vx=b.x+b.w/2-vw/2, vy=b.y+b.h/2-vh/2;
+  var bom=buildBOM();
+  var ls=loadSumKW(), gs=genSumKW();
+  var scheme='<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="'+vx+' '+vy+' '+vw+' '+vh+'" font-family="Arial,sans-serif">'
+    +'<rect x="'+vx+'" y="'+vy+'" width="'+vw+'" height="'+vh+'" fill="#fff"/>'
+    +sceneMarkup(c,false)+'</svg>';
+  var rows=bom.rows.map(function(r){
+    return '<tr><td>'+r.no+'</td><td>'+esc(r.name)+'<div style="color:#64748B;font-size:10px">'+esc(r.spec)+'</div></td>'
+      +'<td style="text-align:right">'+esc(String(r.qty))+'</td><td>'+esc(r.unit)+'</td><td>'+esc(r.note||'')+'</td></tr>';
+  }).join('');
+  $('#printArea').innerHTML=''
+   +'<div class="pr-head"><div><h1>Схема системы отопления</h1>'
+   +'<div class="pr-sub">Визуальный проект · комплектация и монтажная ведомость</div></div>'
+   +'<div class="pr-sub">'+new Date().toLocaleDateString('ru-RU')+'</div></div>'
+   +'<div class="pr-scheme">'+scheme+'</div>'
+   +'<h1 style="font-size:15px;margin-bottom:8px">Ведомость основных материалов</h1>'
+   +'<table><thead><tr><th>№</th><th>Наименование</th><th style="text-align:right">Кол-во</th><th>Ед.</th><th>Примечание</th></tr></thead><tbody>'
+   +rows+'</tbody></table>'
+    +'<div class="pr-foot"><span>Всего труб ПП: '+bom.totalLen.toFixed(2)+' м</span>'
+    +(bom.pexLen>0?'<span>Труб PEX: '+bom.pexLen.toFixed(2)+' м</span>':'')
+    +(ls>0?'<span>Нагрузка: '+ls.toFixed(1)+' кВт</span>':'')
+    +(gs>0?'<span>Котёл: '+gs.toFixed(1)+' кВт</span>':'')
+    +'<span>Составлено в PLUMBER DESIGN · BELYAEV_PROJECT</span></div>';
+  window.print();
+}
+
+/* ---------- demo ---------- */
+function loadDemo(){
+  state.items=[]; state.pipes=[];
+  function add(type,x,y,spec){
+    var it={id:uid(),type:type,x:x,y:y,w:CAT[type].w,h:CAT[type].h,angle:0,spec:spec||CAT[type].specs[0],name:'',notes:''};
+    if(type==='ufc') it.clen=120;
+    if(type==='mancol') manCtab(it);
+    if(POWER_TYPES[type]){ var dpp=defaultPower(it); if(dpp) it.power=dpp; }
+    applyDims(it);
+    state.items.push(it); return it;
+  }
+  var hy=add('hydro',140,140);
+  var te=add('tee',240,160);
+  var pu=add('pump',340,160);
+  var ck=add('check',430,160);
+  var va=add('balancing',520,160);
+  var un=add('union',620,160);
+  var ra=add('radiator',600,320,CAT.radiator.specs[1]);
+  var av=add('airvent',265,300);
+  var uf=add('ufc',380,340);
+  hy.notes='Котельная, подключение Ø50';
+  ra.name='Р-01';
+  ra.notes='10 секций, высота 600 мм';
+  pu.name='Н-01';
+  ck.notes='После насоса, защита от обратного тока';
+  function link(a,ap,b,bp,d,m,mat){
+    var p={id:uid(),a:{itemId:a.id,portId:ap},b:{itemId:b.id,portId:bp},diameter:d||'25',medium:m||'sup',material:mat||'pp',ax:0,ay:0,bx:0,by:0};
+    if(p.material==='pex') p.sub='PEX-AL-PEX';
+    state.pipes.push(p); return p;
+  }
+  link(hy,'s0',te,'a','32','sup');
+  link(te,'b',pu,'a','25','sup');
+  link(pu,'b',ck,'a','25','sup');
+  link(ck,'b',va,'a','25','sup');
+  link(va,'b',un,'a','25','sup');
+  link(un,'b',ra,'a','25','sup');
+  link(ra,'b',hy,'r0','25','ret');
+  link(te,'c',av,'a','20','sup');
+  uf.name='ТП-1'; uf.notes='Контур 120 м, PEX-AL-PEX Ø20, шаг 150 мм';
+  link(hy,'s1',uf,'a','20','sup','pex');
+  link(uf,'b',hy,'r1','20','ret','pex');
+  state.sel=null; history=[]; future=[];
+  state.name='Демо-схема'; state.bg=null; state.branches=[]; state.diag=null;
+  var pnEl=$('#projName'); if(pnEl) pnEl.value=state.name;
+  save(); render(); fitView();
+}
+
+/* ---------- header actions ---------- */
+$('#btnDemo').onclick=function(){ commit(); loadDemo(); toast('Загружен пример схемы'); };
+$('#btnUndo').onclick=undo;
+$('#btnRedo').onclick=redo;
+$('#btnClear').onclick=function(){
+  if(!state.items.length&&!state.pipes.length){toast('Схема уже пуста');return}
+  if(!confirm('Очистить схему полностью? Действие можно отменить (Ctrl+Z).')) return;
+  commit(); state.items=[]; state.pipes=[]; state.sel=null; state.diag=null; save(); render(); toast('Схема очищена');
+};
+$('#btnPNG').onclick=exportPNG;
+$('#btnSVG').onclick=exportSVG;
+$('#btnCSV').onclick=exportCSV;
+$('#btnPrint').onclick=doPrint;
+$('#btnCheck').onclick=runDiagnostics;
+$('#btnBg').onclick=function(){ $('#bgFile').click(); };
+$('#bgFile').onchange=function(){ if(this.files&&this.files[0]) importBgFile(this.files[0]); this.value=''; };
+$('#btnOpen').onclick=function(){ $('#projFile').click(); };
+$('#projFile').onchange=function(){ if(this.files&&this.files[0]) openProjectFile(this.files[0]); this.value=''; };
+$('#btnSave').onclick=saveProjectFile;
+$('#projName').oninput=function(){ state.name=this.value.slice(0,60)||'Новый проект'; save(); };
+$('#zoomIn').onclick=function(){var c=centerView();zoomAt(1.2,c.x,c.y)};
+$('#zoomOut').onclick=function(){var c=centerView();zoomAt(1/1.2,c.x,c.y)};
+$('#zoomFit').onclick=fitView;
+function centerView(){return {x:view.x+view.w/2,y:view.y+view.h/2}}
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('on',x===t)});
+    var isB=t.dataset.tab==='bom';
+    $('#propsPanel').style.display=isB?'none':'block';
+    $('#bomPanel').style.display=isB?'block':'none';
+    if(isB) renderBOM();
+  };
+});
+
+document.addEventListener('keydown',function(e){
+  if(e.code==='Space'){spaceDown=true}
+  var tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Delete'||e.key==='Backspace'){ e.preventDefault(); deleteSelection(); }
+  else if(e.key==='Escape'){ if(link){cancelLink();render()} if(state.group.length){groupClear();renderProps();render()} armTool(null); }
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); }
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){ e.preventDefault(); redo(); }
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='c'){ e.preventDefault(); copySelection(); }
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='v'){ e.preventDefault(); pasteClip(); }
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='d'){ e.preventDefault(); copySelection(); pasteClip(); }
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){
+    e.preventDefault(); groupClear();
+    state.items.forEach(function(i){state.group.push(i.id)});
+    state.sel=null; renderProps(); render();
+    if(state.group.length) toast('Выделено всё: '+state.group.length);
+  }
+  else if(e.key.toLowerCase()==='r'&&state.sel&&state.sel.kind==='item'){
+    var it=itemById(state.sel.id); if(it){commit();it.angle=((it.angle||0)+90)%360;save();render();toast('Повёрнуто на 90°')}
+  }
+  else if((e.code==='KeyX'||e.code==='KeyY')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&state.sel&&state.sel.kind==='item'){
+    var fit=itemById(state.sel.id);
+    if(fit&&fit.type!=='label'){
+      commit();
+      if(e.code==='KeyX') fit.fx=!fit.fx; else fit.fy=!fit.fy;
+      save(); renderProps(); render();
+      toast((e.code==='KeyX'?'Отражение по X':'Отражение по Y')+': '+((e.code==='KeyX'?fit.fx:fit.fy)?'вкл':'выкл'));
+    }
+  }
+});
+document.addEventListener('keyup',function(e){ if(e.code==='Space'){spaceDown=false} });
+
+var toastT=null;
+function toast(msg){
+  var el=$('#toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(function(){el.classList.remove('show')},2400);
+}
+window.addEventListener('resize',function(){ applyView(); });
+
+/* ---------- init ---------- */
+buildCatalog();
+if(!load()){ loadDemo(); toast('Загружен пример — начните проектировать'); }
+var pnInit=$('#projName'); if(pnInit) pnInit.value=state.name;
+render(); fitView();
+setTimeout(function(){ if(!state.sel) toast('Выберите компонент слева и расставьте его на схеме'); },2600);
+
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>

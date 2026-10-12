@@ -1,0 +1,36 @@
+{
+  "name": "PLUMBER DESIGN — проектировщик отопления",
+  "short_name": "PLUMBER DESIGN",
+  "description": "Визуальный проектировщик систем отопления: схемы, ведомость материалов, тепловой расчёт, экспорт.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "termoschema",
+  "display": "standalone",
+  "display_override": ["standalone", "browser"],
+  "orientation": "any",
+  "background_color": "#070B14",
+  "theme_color": "#070B14",
+  "categories": ["utilities", "productivity", "education"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
